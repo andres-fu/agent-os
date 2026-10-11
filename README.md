@@ -4,11 +4,11 @@ A team template for building real software with AI coding agents. Copy it into
 any project and you get:
 
 - **A team with clear roles:** product manager (what), engineering manager (how),
-  developers (test-first), an independent reviewer, QA, and an advisory UX
-  reviewer. Defined in [.claude/agents/](.claude/agents/).
+  developers (test-first), an independent code reviewer, a principal engineer
+  for the big picture and final sign-off, QA, and an advisory UX reviewer. Defined in [.claude/agents/](.claude/agents/).
 - **You as the executive stakeholder.** Agents escalate major decisions to
   [docs/decisions/](docs/decisions/), the meeting room, and wait for you. You
-  approve specs, adopt lessons, and merge.
+  approve specs, adopt lessons, and own the rules.
 - **Gates that cannot be talked past:** tests, secret scanning, static analysis,
   dependency audit and flagged test edits, all in free CI with no model involved
   ([.github/workflows/gates.yml](.github/workflows/gates.yml)).
@@ -45,7 +45,11 @@ operating system around them:
 4. **Code → evidence.** CI runs the gates. The `reviewer` agent reviews the
    diff in a fresh context. `qa` adds smoke and regression tests.
    `ux-reviewer` comments on UI changes.
-5. **You merge.** Then `/retro` records what the team learned.
+5. **Sign-off.** The `principal-engineer` agent judges the whole: should this
+   exist, could we reuse something, does it fit, is the evidence real.
+6. **Merge.** Green gates plus the principal engineer's approval; changes to the
+   rules wait for you ([merge authority](docs/decisions/2026-10-11-merge-authority.md)).
+   Then `/retro` records what the team learned.
 
 ## Adopting it in a project
 
