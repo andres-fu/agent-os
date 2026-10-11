@@ -24,13 +24,15 @@ decided_on:
 ## Options
 | Option | What enforces the rules | Cost | Reversible? |
 | --- | --- | --- | --- |
-| A. Stakeholder merges everything | Only the stakeholder merges | Stakeholder time on every PR | Yes |
+| A. Stakeholder merges everything | The agents' instructions only: they use the stakeholder's account, so GitHub cannot stop them merging | Stakeholder time on every PR | Yes |
 | B. Agents merge routine PRs when the gates are green and the principal engineer approves; rules changes are left to the stakeholder by agent discipline | The agents' instructions only | One Opus review per PR | Yes |
 | C. As B, but agents work under a separate bot GitHub account; CODEOWNERS marks the rules files, and a ruleset requires code-owner review on them | GitHub itself: a bot cannot approve its own PR, and only the stakeholder owns the rules files | One-time setup of a bot account; GitHub allows one free machine account per person | Yes |
 
 ## Recommendation
 **A now, C next.** Keep merging yourself while the team is new: it costs about
-30 seconds a PR and is the only option enforced today. Move to C when the bot
+30 seconds a PR and is the safest option today, though like B it rests on
+agent discipline: nothing on GitHub stops an agent merging (*inferred* from the
+shared account and the 0-approval ruleset). Move to C when the bot
 account is set up; that makes the principal engineer's approval the real gate
 for routine work and the rules truly protected. B is not recommended: it is the
 "gate an agent could talk past" that the README promises against.

@@ -29,6 +29,6 @@ power and reviewed in PRs.
 ## Known gaps
 - The shell rule is an instruction only; their `Bash` tool can still reach the
   network (found by the security review on PR #3). A permission deny list would
-  make it a hook-level rule.
+  make it a Claude Code permission rule rather than an instruction.
 - `docs/landscape.md` is written from web research, so it is itself a path for
   injected text. It is reviewed in PRs and read as data.

@@ -64,8 +64,10 @@ operating system around them:
 3. Optional: install [Dope TDD](https://github.com/andres-fu/dope-tdd) on your
    machine to enforce test-first inside each session, and enable its catch
    check in CI.
-4. Turn on branch protection for `main`: require the `gates` checks and one
-   human approval.
+4. Protect `main` with a ruleset: require a pull request and the `gates`
+   checks, and block force pushes and deletions. Require approvals only if
+   agents work under their own GitHub account; nobody can approve their own PR
+   ([merge authority](docs/decisions/2026-10-11-merge-authority.md)).
 
 ## Budget
 
