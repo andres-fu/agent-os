@@ -32,3 +32,8 @@ test('the minimum length can be changed', () => {
 test('a non-string is an error, not a silent pass', () => {
   assert.throws(() => findEncodedBlobs(undefined), TypeError);
 });
+
+test('an invalid minimum length is an error', () => {
+  assert.throws(() => findEncodedBlobs('abc', { minLength: 0 }), RangeError);
+  assert.throws(() => findEncodedBlobs('abc', { minLength: 2.5 }), RangeError);
+});
