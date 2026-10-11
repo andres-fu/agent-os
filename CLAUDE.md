@@ -6,7 +6,8 @@ fit on a page get followed. Details live in `.claude/agents/` and `docs/`.
 ## Who decides what
 - **The stakeholder (a human)** owns goals, budget, risk and the rules
   themselves. Agents never approve their own work.
-- **Merging** follows `docs/decisions/2026-10-11-merge-authority.md`.
+- **Merging:** until `docs/decisions/2026-10-11-merge-authority.md` is decided,
+  **only the stakeholder merges.** Agents never merge.
 - **Product manager** decides *what*: writes the spec in `docs/specs/`.
 - **Engineering manager** decides *how*: the plan, which files each task touches,
   the interfaces between tasks.
