@@ -23,7 +23,9 @@ CI, decides; the stakeholder keeps the rules.
 - **`request_changes` or `escalate`:** the `principal-engineer` check fails, so
   the ruleset blocks the merge. For an escalation, the stakeholder decides,
   then:
-  1. unticks `principal-engineer` in the ruleset under required checks;
+  1. checks that no other open PR has auto-merge on (turning it off where it
+     is), and unticks `principal-engineer` in the ruleset under required
+     checks;
   2. merges the PR;
   3. ticks `principal-engineer` again straight away, with its source still
      GitHub Actions.
@@ -35,23 +37,29 @@ CI, decides; the stakeholder keeps the rules.
 | --- | --- |
 | No merge without CI's Approve on the latest commit | **GitHub**: the ruleset requires the `principal-engineer` status from GitHub Actions, so a status posted from a person's account does not count |
 | Escalated or rejected PRs cannot merge | **GitHub**: the same required check fails |
-| Agents do not merge approved protected PRs, or edit the ruleset | **Only agent instructions and `.claude/settings.json`'s deny list.** Agents act under the stakeholder's (admin) GitHub account, so GitHub cannot tell them apart |
+| Agents do not merge approved protected PRs, or edit the ruleset | **Only agent instructions and `.claude/settings.json`'s best-effort deny list** (a command written another way can get past it). Agents act under the stakeholder's (admin) GitHub account, so GitHub cannot tell them apart |
 | The reviewer cannot be edited by the PR it reviews | **GitHub**: `pull_request_target` runs `main`'s workflow and role |
 | The reviewer reads no untrusted web content | In CI, **Claude Code's tool limits** (Read, Grep, Glob only); in other sessions, an instruction (lesson L-0008) |
 
 ## Known limits
 - While `principal-engineer` is unticked to merge an escalated PR, any PR can
-  merge without CI's approval. Keep that window to the one merge.
+  merge without CI's approval, including one whose auto-merge is already on.
+  Keep that window to the one merge.
 - Agents share the stakeholder's account (see the table). A separate bot account
   would make GitHub enforce the third row; it was considered and set aside as
   too much setup for now. `.github/CODEOWNERS` is ready for it but inactive.
+  Do not turn on "require code owner review" before the bot exists: agents open
+  PRs as the code owner, who cannot approve their own PR, so protected PRs
+  could not merge.
 - Prompt injection in a PR could talk the reviewer into approving. An approved
   PR that changes no protected file auto-merges once the gates pass. Summaries
   carrying long encoded strings are withheld (`tools/review/check-summary.mjs`).
 - Rebase keeps every commit on `main`: the red-then-green test history survives,
   but so does anything added and then removed within a PR (gitleaks scans every
   commit), and `git bisect` meets red commits by design.
-- The reviewer is the same model family as the authors.
+- The reviewer is the same model family as the authors, and runs on Sonnet to
+  save plan usage. `/retro` tracks its approve and escalate rate as evidence
+  of whether that is strong enough.
 - Merges by `github-actions[bot]` do not trigger workflows on `main`; the PR
   already passed every required check.
 - Revisit all of this if the repository goes public.
@@ -69,3 +77,9 @@ engineer escalated
 [#8](https://github.com/andres-fu/agent-os/pull/8#issuecomment-6113269613); an
 "escalate gives a green check" variant was rejected because it made PRs with no
 approval mergeable. Full reasoning is in those PRs and this file's git history.
+
+On 2026-10-11 the stakeholder approved, after the principal engineer escalated
+[#9](https://github.com/andres-fu/agent-os/pull/9#issuecomment-6113657293)
+("yes to all"): both reviewers run on Sonnet; one review per PR, adding
+security-compliance only for a trigger; and security review of #9 and of the
+`/onboard` spec before merging them.
