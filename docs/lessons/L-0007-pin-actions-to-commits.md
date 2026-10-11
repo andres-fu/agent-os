@@ -18,6 +18,9 @@ gate with 10 blocking findings: every action was referenced by a tag like
 trivy-action and kics-github-action supply-chain compromises happened.
 
 ## What we changed
-Every action is pinned to the commit its tag pointed to on 2026-10-11, found with
-`git ls-remote --tags`, and the Semgrep image to the digest that run used. The
-gate that caught it stays on, so it cannot come back.
+Every action is pinned to a full commit SHA found with `git ls-remote --tags`,
+with the version as a comment. While pinning, checkout and setup-node were also
+upgraded from v4 to v7.0.1 and v7.1.0, which moves them off the deprecated
+Node 20 runtime; gitleaks-action stays on v2 (v2.3.9). The Semgrep image is
+pinned to the `latest` digest that run used. The gate that caught it stays on,
+so it cannot come back.
