@@ -51,3 +51,22 @@ test('every protected rule is documented with a reason', () => {
     assert.ok(rule.reason.length > 0, `rule ${rule.path} has no reason`);
   }
 });
+
+test('what the CI gates run and read is protected', () => {
+  const files = [
+    'package.json',
+    'package-lock.json',
+    'tools/lessons/lessons.mjs',
+    'tools/anything/new.mjs',
+    '.gitleaks.toml',
+    '.gitleaksignore',
+    '.semgrepignore',
+    '.semgrep.yml',
+    '.semgrep/rules.yml',
+  ];
+  assert.deepEqual(findProtected(files), { protected: true, matches: files });
+});
+
+test('nested package files are not the root manifest', () => {
+  assert.equal(findProtected(['apps/web/package.json']).protected, false);
+});
