@@ -68,50 +68,57 @@ it.
 - **Authors never merge.**
 
 ## What enforces it
-- **The ruleset, and only once it is set up.** `principal-engineer` must be a
-  required status check **with its source set to GitHub Actions**. Then a status
-  posted from anyone's own account does not count, and no merge (by the GitHub
-  UI, `gh`, the API or auto-merge) can happen until CI's reviewer approves **or
-  escalates** the latest commit. For an approved PR this is the real gate. For
-  an escalated PR it is not: the check is green although nobody approved, so
-  only the stakeholder's own judgement and the deny list below stop a merge
-  (amendment 1).
+- **The ruleset.** `principal-engineer` is a required status check **with its
+  source set to GitHub Actions**, so a status posted from anyone's own account
+  does not count, and no merge (by the GitHub UI, `gh`, the API or auto-merge)
+  can happen until CI's reviewer approves the latest commit, except a bypass
+  merge by an account on the bypass list. See "What is enforced, by stage" for
+  what this does and does not cover today.
 - **`.claude/settings.json`** denies agent sessions `gh pr merge`, `gh api`, the
   GitHub merge and auto-merge tools, and edits to itself. A deny list matches
   command prefixes, so it **reduces** the risk; it does not prevent a
   determined agent (for example `bash -c`). The ruleset is what prevents it.
 
-## Amendment 1 (2026-10-11): escalations and specs
+## Amendment 1 (2026-10-11): specs, escalations, and a bot account (D2)
 Raised by the CI principal engineer on
-[andres-fu/agent-os#8](https://github.com/andres-fu/agent-os/pull/8#issuecomment-6113269613),
-which escalated a spec marked approved: specs were unprotected, so its Approve
-would have auto-merged the stakeholder's approval without the stakeholder
-seeing it. And an `escalate` verdict failed the required check, so the
-stakeholder had no clean way to answer it.
+[andres-fu/agent-os#8](https://github.com/andres-fu/agent-os/pull/8#issuecomment-6113269613):
+specs were unprotected, so its Approve would have auto-merged a spec marked
+"approved" without the stakeholder seeing it, and an `escalate` verdict gave the
+stakeholder no clean way to merge after deciding. A first fix (an escalated PR
+gets a green check) was rejected after the principal engineer and security
+reviews of [andres-fu/agent-os#9](https://github.com/andres-fu/agent-os/pull/9):
+it let any PR with no approval become mergeable, and text in a PR that steered
+the reviewer to `escalate` would produce a green check.
 
-Decided by the stakeholder on 2026-10-11 ("yes go with your recommendation"),
-confirmed by merging the PR that adds this section:
-- **`docs/specs/` is protected.** The stakeholder merges every spec, and that
-  merge is the recorded approval.
-- **`escalate` means the stakeholder decides.** The workflow posts the
-  reviewer's question, never turns on auto-merge, and sets the
-  `principal-engineer` status to success with "Escalated: not approved;
-  stakeholder decision required", so the stakeholder can merge after reading it.
-- **Trade-off.** An escalated PR has **no approval**: the reviewer declined to
-  approve it. Before this amendment the ruleset blocked it outright; now its
-  check is green, and anyone holding the shared account can merge it. Only the
-  deny list and agent instructions stop an agent doing so. This is wider than
-  the gap for approved protected PRs, which at least carry the reviewer's
-  approval. It also means text in a PR that steers the reviewer to `escalate`
-  produces a green check. Option C (a bot account) closes it.
-- **Why not bypass the ruleset instead?** The ruleset's bypass list is empty, so
-  the stakeholder's only other way to merge an escalated PR is to edit or
-  disable the ruleset, which removes protection from every PR while it is off.
+Decided by the stakeholder on 2026-10-11 ("let's do D", then "D2"), confirmed
+by merging the PR that adds this section:
+- **`docs/specs/` is protected.** The stakeholder merges every spec; that merge
+  is the recorded approval.
+- **`escalate` fails the check**, like `request_changes`. Nobody can merge an
+  escalated PR through the ruleset; the stakeholder answers it by merging
+  through the ruleset's bypass.
+- **Agents act as a bot account, `andres-fu-bot`** (a collaborator with write
+  access). The stakeholder's account, `andres-fu`, is on the ruleset's bypass
+  list. `.github/CODEOWNERS` gives every protected path to `@andres-fu`, and the
+  ruleset requires code-owner review, so a bot PR touching them needs the
+  stakeholder's approval.
+- **Commits are authored as the stakeholder**, pushed by the bot, and merged by
+  **rebase**, so the stakeholder keeps contribution credit (GitHub credits
+  original authors on rebase) and the red-then-green history stays on `main`.
 
-*Correction, 2026-10-11:* the first version of this amendment called the
-trade-off "the same gap as approved protected PRs". The principal engineer's
-review of PR #9 showed it is wider. The stakeholder was asked to confirm the
-decision with the corrected description.
+## What is enforced, by stage
+| Stage | What enforces "agents never merge without approval" |
+| --- | --- |
+| Now: agents still act as `andres-fu` | Approved PRs: the ruleset (required `principal-engineer` from GitHub Actions). Escalated or rejected PRs: the ruleset blocks every merge. Approved PRs that change protected files: only the deny list and agent instructions, because agents hold the stakeholder's account. |
+| After the stakeholder connects Claude to `andres-fu-bot` and adds the ruleset changes below | GitHub. The bot cannot bypass the ruleset, cannot approve its own PRs, and cannot satisfy code-owner review on protected paths. Only `andres-fu` can merge an escalated PR or approve a protected one. |
+
+Stakeholder setup still to do, in order:
+1. Connect Claude's GitHub integration to `andres-fu-bot` (claude.ai/connect-github).
+2. Ruleset `Main`: add `andres-fu` to the bypass list; under "Require a pull
+   request", tick "Require review from Code Owners".
+3. Confirm on the first bot PR that its commits count on `andres-fu`'s
+   contribution graph (*unknown* until seen: the rebase rule comes from older
+   GitHub Enterprise documentation).
 
 ## Known limits
 - Agents act under the stakeholder's GitHub account. For a PR the reviewer has
@@ -121,10 +128,11 @@ decision with the corrected description.
 - The stakeholder's own account can merge anything after approval; that is
   their right.
 - Prompt injection in a PR's diff or description could talk the reviewer into
-  approving. It has no shell, web or write access, so the worst case is a wrong
-  approval; the gates and the protected-paths rule still apply, and summaries
-  carrying long encoded strings are withheld (`tools/review/check-summary.mjs`).
-  Revisit if the repo goes public.
+  approving. It has no shell, web or write access, so it cannot act itself, but
+  a wrong approval of a PR that changes no protected file **does auto-merge**
+  once the gates pass. Protected files still need the stakeholder, and
+  summaries carrying long encoded strings are withheld
+  (`tools/review/check-summary.mjs`). Revisit if the repo goes public.
 - Merges made by `github-actions[bot]` do not trigger workflows on `main`; the
   PR already passed every required check.
 - The reviewer is the same model family as the authors; a reviewer from a
