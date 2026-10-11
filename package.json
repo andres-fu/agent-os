@@ -8,7 +8,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "node --test tools/lessons/lessons.test.mjs",
+    "test": "node --test tools/lessons/lessons.test.mjs tools/review/protected-paths.test.mjs",
     "lessons:check": "node tools/lessons/lessons.mjs check",
     "lessons:index": "node tools/lessons/lessons.mjs index"
   },
