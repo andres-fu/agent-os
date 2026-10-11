@@ -70,3 +70,8 @@ test('what the CI gates run and read is protected', () => {
 test('nested package files are not the root manifest', () => {
   assert.equal(findProtected(['apps/web/package.json']).protected, false);
 });
+
+test('the landscape is protected: the reviewer trusts it for build-or-reuse', () => {
+  assert.equal(findProtected(['docs/landscape.md']).protected, true);
+  assert.equal(findProtected(['docs/landscape-notes.md']).protected, false);
+});
