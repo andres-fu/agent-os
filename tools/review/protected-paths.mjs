@@ -17,7 +17,14 @@ export const PROTECTED = [
   { path: '.github/', reason: 'CI gates, the review workflow and PR template' },
   { path: 'docs/decisions/', reason: 'decisions only the stakeholder makes' },
   { path: 'docs/lessons/', reason: 'only the stakeholder adopts lessons' },
-  { path: 'tools/review/', reason: 'the rule that decides what is protected' },
+  { path: 'tools/', reason: 'the code the gates run, including this rule' },
+  { path: 'package.json', reason: 'the test command the gates run' },
+  { path: 'package-lock.json', reason: 'the dependencies the gates install' },
+  { path: '.gitleaks.toml', reason: 'the secret scanner configuration' },
+  { path: '.gitleaksignore', reason: 'what the secret scanner skips' },
+  { path: '.semgrepignore', reason: 'what static analysis skips' },
+  { path: '.semgrep.yml', reason: 'the static analysis rules' },
+  { path: '.semgrep/', reason: 'the static analysis rules' },
 ];
 
 function normalise(file) {
