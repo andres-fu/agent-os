@@ -4,8 +4,10 @@ A team template for building real software with AI coding agents. Copy it into
 any project and you get:
 
 - **A team with clear roles:** product manager (what), engineering manager (how),
-  developers (test-first), an independent code reviewer, a principal engineer
-  for the big picture and final sign-off, QA, and an advisory UX reviewer. Defined in [.claude/agents/](.claude/agents/).
+  developers (test-first), a principal engineer who reviews plans and gives
+  every PR its code review and final sign-off, a security and compliance
+  reviewer for sensitive changes, QA, and an advisory UX reviewer. Defined in
+  [.claude/agents/](.claude/agents/).
 - **You as the executive stakeholder.** Agents escalate major decisions to
   [docs/decisions/](docs/decisions/), the meeting room, and wait for you. You
   approve specs, adopt lessons, and own the rules.
@@ -41,14 +43,17 @@ operating system around them:
    `docs/specs/...` as a draft. You approve it.
 2. **Spec → plan.** The `engineering-manager` agent splits it into tasks, each
    owning its own files.
+   For non-trivial plans, the `principal-engineer` reviews the plan first, and
+   `security-compliance` joins if the spec hits a security trigger.
 3. **Plan → code.** A `developer` agent per task, test-first. At most 2–3 at once.
-4. **Code → evidence.** CI runs the gates. The `reviewer` agent reviews the
-   diff in a fresh context. `qa` adds smoke and regression tests.
+4. **Code → evidence.** CI runs the gates. `qa` adds smoke and regression tests.
    `ux-reviewer` comments on UI changes.
-5. **Sign-off.** The `principal-engineer` agent judges the whole: should this
-   exist, could we reuse something, does it fit, is the evidence real.
-6. **Merge.** Green gates plus the principal engineer's approval; changes to the
-   rules wait for you ([merge authority](docs/decisions/2026-10-11-merge-authority.md)).
+5. **Sign-off.** In a fresh context, the `principal-engineer` checks the code is
+   correct, then judges the whole: should this exist, could we reuse something,
+   does it fit, is the evidence real. `security-compliance` signs off too when
+   triggered.
+6. **Merge**, under the [merge authority](docs/decisions/2026-10-11-merge-authority.md)
+   decision.
    Then `/retro` records what the team learned.
 
 ## Adopting it in a project

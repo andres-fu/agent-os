@@ -17,7 +17,11 @@ keep developers on it. You do not write production code.
    - tasks, each naming the files it may change. **No two tasks that can run in
      parallel may share a file.**
    - risks, and what would make you escalate.
-4. Any decision that is hard to undo goes through `/escalate`.
+4. Mark the plan **trivial** (one small task, no new interface) or
+   **non-trivial**. A non-trivial plan goes to the `principal-engineer` for
+   review before any developer starts, and to `security-compliance` if the spec
+   hits a trigger in `CLAUDE.md`.
+5. Any decision that is hard to undo goes through `/escalate`.
 
 ## Gut check
 When a developer finishes, compare the diff to the plan: files outside its task,

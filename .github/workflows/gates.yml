@@ -1,6 +1,7 @@
 # The team's hard gates. These run without any model, so they cost nothing
-# against the Claude plan and cannot be argued with. A PR merges only when
-# every job is green and the stakeholder approves.
+# against the Claude plan and cannot be argued with. Every job must be green
+# before a PR can merge; who may merge is set by
+# docs/decisions/2026-10-11-merge-authority.md.
 #
 # Every action and image is pinned to an exact commit or digest: a tag like
 # @v4 can be moved by its owner to different code (lesson L-0007). To update,

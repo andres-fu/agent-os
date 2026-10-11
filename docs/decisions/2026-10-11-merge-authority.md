@@ -1,36 +1,47 @@
 ---
-title: Who may merge a pull request?
-status: decided
+title: Who may merge a pull request, and how is it enforced?
+status: awaiting-decision
 raised_by: stakeholder
 date: 2026-10-11
-decided_by: Andres Fuentes (stakeholder)
-decided_on: 2026-10-11
+decided_by:
+decided_on:
 ---
 
 ## Context
-Until now the charter said agents never merge, so every PR waited for the
-stakeholder (*observed*: CLAUDE.md before this change). The stakeholder asked
-for an independent, principal-level reviewer whose approval is the real gate, so
-that routine work does not wait on them.
+- The stakeholder asked for an independent, principal-level reviewer whose
+  approval is the real gate, so that routine work does not wait on them.
+- The principal engineer's own review of this proposal
+  ([andres-fu/agent-os#3](https://github.com/andres-fu/agent-os/pull/3#issuecomment-6112534173))
+  found that the rule "changes to the rules need the stakeholder" is enforced by
+  nothing (*observed*).
+- Root cause (*observed*): agents open PRs and merge under the stakeholder's own
+  GitHub account. GitHub cannot tell the two apart, so no GitHub rule (CODEOWNERS,
+  required reviews) can block an agent without also blocking the stakeholder, and
+  GitHub does not let anyone approve their own PR.
+- Today's ruleset on `main` (*observed*, set 2026-10-11): PR required, the five
+  gates required, no force pushes or deletions, 0 approvals.
 
 ## Options
-| Option | Cost | Risk | Reversible? |
+| Option | What enforces the rules | Cost | Reversible? |
 | --- | --- | --- | --- |
-| A. Stakeholder merges everything | Stakeholder time on every PR | Lowest | Yes |
-| B. An agent merges when gates are green and the principal engineer approves; changes to the rules still need the stakeholder | One Opus review per PR | An agent-only approval chain on routine work | Yes: edit this file |
-| C. An agent merges when gates are green | Lowest | No independent judgment | Yes |
+| A. Stakeholder merges everything | Only the stakeholder merges | Stakeholder time on every PR | Yes |
+| B. Agents merge routine PRs when the gates are green and the principal engineer approves; rules changes are left to the stakeholder by agent discipline | The agents' instructions only | One Opus review per PR | Yes |
+| C. As B, but agents work under a separate bot GitHub account; CODEOWNERS marks the rules files, and a ruleset requires code-owner review on them | GitHub itself: a bot cannot approve its own PR, and only the stakeholder owns the rules files | One-time setup of a bot account; GitHub allows one free machine account per person | Yes |
 
 ## Recommendation
-B. The gates prove the code works; the principal engineer judges whether it
-should exist and fits the whole; the stakeholder keeps the rules themselves.
+**A now, C next.** Keep merging yourself while the team is new: it costs about
+30 seconds a PR and is the only option enforced today. Move to C when the bot
+account is set up; that makes the principal engineer's approval the real gate
+for routine work and the rules truly protected. B is not recommended: it is the
+"gate an agent could talk past" that the README promises against.
+
+Either way:
+- The principal engineer and security reviewer have no web access, so untrusted
+  content cannot steer a merge (lesson L-0008).
+- The merging actor is whoever holds merge rights on the PR: the stakeholder in
+  A, the bot account (least privilege: contents and pull requests on this repo
+  only) in C.
+- A reviewer from a different vendor is added when Codex support lands.
 
 ## Decision
-**B.** An agent may merge a pull request only when:
-1. every required check is green on the PR's latest commit, and
-2. the `principal-engineer` agent's verdict on that commit is **Approve**, posted
-   on the PR, and
-3. the PR does not change `CLAUDE.md`, `AGENTS.md`, `.claude/agents/`,
-   `.github/workflows/`, `docs/decisions/`, or adopt a lesson.
-Anything in 3 is merged by the stakeholder. The principal engineer is a Claude
-agent with a fresh context; a reviewer from a different vendor is added when
-Codex support lands. Merging the PR that adds this file confirms the decision.
+Filled in by the stakeholder.

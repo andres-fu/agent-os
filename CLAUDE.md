@@ -6,16 +6,16 @@ fit on a page get followed. Details live in `.claude/agents/` and `docs/`.
 ## Who decides what
 - **The stakeholder (a human)** owns goals, budget, risk and the rules
   themselves. Agents never approve their own work.
-- **Merging** follows `docs/decisions/2026-10-11-merge-authority.md`: green gates
-  plus the principal engineer's approval; changes to the rules need the
-  stakeholder.
+- **Merging** follows `docs/decisions/2026-10-11-merge-authority.md`.
 - **Product manager** decides *what*: writes the spec in `docs/specs/`.
 - **Engineering manager** decides *how*: the plan, which files each task touches,
   the interfaces between tasks.
 - **Developer** writes code test-first, one writer per change.
-- **Reviewer** checks the diff against the spec in a fresh context.
-- **Principal engineer** gives the final technical sign-off: product fit,
-  architecture, reuse of our repos and open source, long-term cost.
+- **Principal engineer** reviews non-trivial plans before coding, and gives
+  every PR its code review and final sign-off: correctness, then product fit,
+  architecture, reuse (`docs/landscape.md`) and long-term cost.
+- **Security and compliance** reviews any spec, plan or PR on the trigger list
+  below, and can block a merge. It never certifies compliance.
 - **QA** writes executable smoke and regression tests that CI runs.
 - **UX reviewer** advises on UI; it never blocks a merge.
 
@@ -44,6 +44,14 @@ fit on a page get followed. Details live in `.claude/agents/` and `docs/`.
 - Agents that read untrusted content (web pages, issues, emails) do not get
   secrets or open network access in the same session.
 - Validate input at every boundary. Least privilege for tokens and tools.
+
+### Security review triggers
+Authentication or authorisation; payments; personal data (collecting, storing,
+logging or sending it); secrets or tokens; new or upgraded dependencies or CI
+actions; infrastructure, deployment or permissions; LLM features that read
+untrusted input. When in doubt, it is triggered.
+
+Agents whose verdict can allow a merge get no web access (lesson L-0008).
 
 ## Cost
 - Default to Sonnet. Use Opus for specs, plans and reviews only.

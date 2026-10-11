@@ -13,8 +13,8 @@ Fill with what you **observed**. Leave a line blank rather than guess.
 - [ ] Files changed are only those the plan assigned
 
 ## Sign-off
-- Reviewer: <link to comment>
-- Principal engineer: <link to comment, with its verdict>
+- Principal engineer: <link to comment, with its verdict, for this commit>
+- Security and compliance: not triggered / <link to comment, with its verdict>
 
 ## Escalations
 None / <link to docs/decisions/...>
