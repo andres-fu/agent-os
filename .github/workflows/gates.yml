@@ -1,0 +1,118 @@
+# The team's hard gates. These run without any model, so they cost nothing
+# against the Claude plan and cannot be argued with. A PR merges only when
+# every job is green and the stakeholder approves.
+name: gates
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install
+        run: if [ -f package-lock.json ]; then npm ci; fi
+      - name: Test
+        run: npm test
+
+  lessons:
+    name: lessons have evidence
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node tools/lessons/lessons.mjs check
+
+  secrets:
+    name: no secrets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # Free for personal accounts; an organization needs a GITLEAKS_LICENSE secret.
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  static-analysis:
+    name: static analysis
+    runs-on: ubuntu-latest
+    container: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v4
+      - run: semgrep scan --config p/default --error --metrics off
+
+  dependencies:
+    name: dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Audit npm dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm audit --audit-level=high
+          else
+            echo "No package-lock.json; nothing to audit."
+          fi
+
+  test-edits:
+    name: flag edits to existing tests
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: List modified test files
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          changed=$(git diff --name-status "$BASE"...HEAD \
+            | awk '$1 == "M" { print $2 }' \
+            | grep -E '(^|/)(tests?|__tests__|spec)/|\.(test|spec)\.[a-z]+$|(^|/)test_[^/]+\.py$' || true)
+          if [ -z "$changed" ]; then
+            echo "No existing test files were modified." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          {
+            echo "### Existing tests modified: the PR must say why"
+            echo "$changed" | sed 's/^/- /'
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "$changed" | while read -r f; do
+            echo "::warning file=$f::Existing test modified; the PR receipt must give the reason."
+          done
+
+  # Dope TDD's catch check: each changed source file's test must fail when the
+  # change is reverted. Uncomment once the repository can use the action
+  # (andres-fu/dope-tdd is private, so only repos it is shared with can).
+  # catch-check:
+  #   name: tests catch the change
+  #   if: github.event_name == 'pull_request'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 22
+  #     - run: npm ci
+  #     - uses: andres-fu/dope-tdd/tools/pr-check@main
+  #       with:
+  #         base: ${{ github.base_ref }}

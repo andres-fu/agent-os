@@ -1,0 +1,16 @@
+{
+  "name": "agent-os",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A team template for AI coding agents: roles, gates, decisions and an evidence-backed lessons ledger.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test tools/lessons/lessons.test.mjs",
+    "lessons:check": "node tools/lessons/lessons.mjs check",
+    "lessons:index": "node tools/lessons/lessons.mjs index"
+  },
+  "license": "MIT"
+}

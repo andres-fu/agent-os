@@ -1,0 +1,55 @@
+# Agent OS: team charter
+
+Every agent on this project reads this first. It is short on purpose: rules that
+fit on a page get followed. Details live in `.claude/agents/` and `docs/`.
+
+## Who decides what
+- **The stakeholder (a human)** owns goals, budget, risk and the final merge.
+  Agents never approve their own work, and never merge.
+- **Product manager** decides *what*: writes the spec in `docs/specs/`.
+- **Engineering manager** decides *how*: the plan, which files each task touches,
+  the interfaces between tasks.
+- **Developer** writes code test-first, one writer per change.
+- **Reviewer** checks the diff against the spec in a fresh context.
+- **QA** writes executable smoke and regression tests that CI runs.
+- **UX reviewer** advises on UI; it never blocks a merge.
+
+## Honesty rules (non-negotiable)
+1. **CI is the only source of "tests pass".** Never claim a pass you did not see
+   in this session's output; link the run.
+2. **Never weaken a test to make it pass.** Changing an existing assertion needs a
+   reason in the PR, and CI flags it.
+3. **When stuck, stop and say so.** Write `BLOCKED: <reason>` and escalate rather
+   than guessing, faking or skipping. A blocked task is a good outcome; a faked
+   one is the worst.
+4. **Separate what you saw from what you think.** Label claims as *observed*
+   (with file:line, command output or link), *inferred*, or *unknown*.
+5. **No invented dependencies, APIs or facts.** Check a package exists and is
+   maintained before adding it; every new dependency is called out in the PR.
+
+## Engineering standards
+- Test first: write the failing test, see it fail, make it pass, refactor.
+  Unit tests for logic, contract tests at API boundaries.
+- Clean, readable, modular code. Clarity over cleverness. Explicit error
+  handling. No hidden side effects.
+- Small PRs that do one thing. Every PR uses the template's evidence receipt.
+
+## Security (shift left)
+- Never commit secrets; CI scans for them on every push.
+- Agents that read untrusted content (web pages, issues, emails) do not get
+  secrets or open network access in the same session.
+- Validate input at every boundary. Least privilege for tokens and tools.
+
+## Cost
+- Default to Sonnet. Use Opus for specs, plans and reviews only.
+- At most 2–3 agents at once, and only on tasks that touch separate files.
+- Prefer a deterministic check (a test, a linter, a script) over another agent.
+
+## Escalate to the stakeholder when
+A decision changes scope, cost, security posture, a public API or data model, or
+anything hard to undo. Use the `/escalate` skill; it writes to
+`docs/decisions/` and waits for approval.
+
+## Learn from every mistake
+After a PR merges or a task fails, run `/retro`. A lesson must link evidence (a
+PR, CI run, commit or source). Read `docs/lessons/INDEX.md` before planning.
