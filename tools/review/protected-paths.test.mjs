@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { findProtected, PROTECTED } from './protected-paths.mjs';
 
 // Specs were unprotected until 2026-10-11; they now are (see the specs test).
-test('a PR that only changes code and its tests is not protected', () => {
+test('a PR that changes only code, tests and unprotected docs is not protected', () => {
   const result = findProtected(['src/app.ts', 'tests/app.test.ts', 'docs/notes.md']);
   assert.deepEqual(result, { protected: false, matches: [] });
 });

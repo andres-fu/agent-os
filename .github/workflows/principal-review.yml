@@ -208,7 +208,7 @@ jobs:
             # Rebase, not squash: each commit and the red-then-green test history
             # survive on main.
             if ! gh pr merge "$PR" --repo "$GITHUB_REPOSITORY" --auto --rebase --match-head-commit "$HEAD_SHA"; then
-              echo "::error::Approved, but auto-merge could not be turned on. Check that 'Allow auto-merge' is on in the repository settings, or merge by hand."
+              echo "::error::Approved, but auto-merge could not be turned on. Check that 'Allow auto-merge' and 'Allow rebase merging' are on in the repository settings, or merge by hand."
               exit 1
             fi
             echo "Approved: auto-merge on; GitHub merges once every required check is green."
