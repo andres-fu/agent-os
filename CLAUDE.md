@@ -60,7 +60,10 @@ network from the shell. Today that is an instruction, not a sandbox (lesson
 L-0008).
 
 ## Cost
-- Default to Sonnet. Use Opus for specs, plans and reviews only.
+- Default to Sonnet, including the CI principal engineer. Use Opus for specs
+  and plans only.
+- One review per PR: the CI principal engineer. Add `security-compliance` only
+  for code that hits a trigger above, not for docs or wording.
 - At most 2–3 agents at once, and only on tasks that touch separate files.
 - Prefer a deterministic check (a test, a linter, a script) over another agent.
 

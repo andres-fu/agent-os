@@ -20,7 +20,7 @@
 # `principal-engineer` in the ruleset's required checks WITH ITS SOURCE SET TO
 # GitHub Actions. That source pin is what stops a status posted from anyone's
 # own account from counting as an approval.
-# Decision: docs/decisions/2026-10-11-merge-authority.md (option D, amendment 1).
+# Decision: docs/decisions/2026-10-11-merge-authority.md.
 name: principal-review
 
 on:
@@ -109,7 +109,7 @@ jobs:
             review in Markdown, under 400 words, with observed / inferred /
             unknown labels; blocking lists each blocking concern.
           claude_args: >-
-            --model opus
+            --model sonnet
             --max-turns 20
             --allowedTools Read,Grep,Glob
             --disallowedTools Bash,Edit,Write,MultiEdit,NotebookEdit,WebFetch,WebSearch
@@ -192,7 +192,7 @@ jobs:
 
           # Escalate is not an approval: the check fails like a rejection, and
           # the stakeholder decides and merges by temporarily editing the ruleset
-          # (docs/decisions/2026-10-11-merge-authority.md, amendment 1).
+          # (docs/decisions/2026-10-11-merge-authority.md).
           if [ "$verdict" != "approve" ]; then
             status failure "Verdict: $verdict"
             stop_auto_merge
