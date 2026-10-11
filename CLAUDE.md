@@ -6,8 +6,10 @@ fit on a page get followed. Details live in `.claude/agents/` and `docs/`.
 ## Who decides what
 - **The stakeholder (a human)** owns goals, budget, risk and the rules
   themselves. Agents never approve their own work.
-- **Merging:** until `docs/decisions/2026-10-11-merge-authority.md` is decided,
-  **only the stakeholder merges.** Agents never merge.
+- **Merging** (`docs/decisions/2026-10-11-merge-authority.md`): authors never
+  merge. The `principal-review` workflow merges a PR when the principal engineer
+  approves it in CI and every required check is green; the ruleset enforces
+  that. Changes to the rules are merged by the stakeholder.
 - **Product manager** decides *what*: writes the spec in `docs/specs/`.
 - **Engineering manager** decides *how*: the plan, which files each task touches,
   the interfaces between tasks.
