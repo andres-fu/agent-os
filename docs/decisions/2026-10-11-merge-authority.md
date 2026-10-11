@@ -109,11 +109,12 @@ by merging the PR that adds this section:
 ## What is enforced, by stage
 | Stage | What enforces "agents never merge without approval" |
 | --- | --- |
-| Now: agents still act as `andres-fu` | Approved PRs: the ruleset (required `principal-engineer` from GitHub Actions). Escalated or rejected PRs: the ruleset blocks every merge. Approved PRs that change protected files: only the deny list and agent instructions, because agents hold the stakeholder's account. |
+| Now: agents still act as `andres-fu` | Approved PRs: the ruleset (required `principal-engineer` from GitHub Actions). Escalated or rejected PRs: the ruleset blocks every merge; until the bypass exists, the stakeholder can only merge one by editing the ruleset. Approved PRs that change protected files: only the deny list and agent instructions, because agents hold the stakeholder's account. **Do not add `andres-fu` to the bypass list in this stage**: agents holding that account would bypass every check. |
 | After the stakeholder connects Claude to `andres-fu-bot` and adds the ruleset changes below | GitHub. The bot cannot bypass the ruleset, cannot approve its own PRs, and cannot satisfy code-owner review on protected paths. Only `andres-fu` can merge an escalated PR or approve a protected one. |
 
 Stakeholder setup still to do, in order:
 1. Connect Claude's GitHub integration to `andres-fu-bot` (claude.ai/connect-github).
+   Settings → General: confirm "Allow rebase merging" is on (auto-merge uses it).
 2. Ruleset `Main`: add `andres-fu` to the bypass list; under "Require a pull
    request", tick "Require review from Code Owners".
 3. Confirm on the first bot PR that its commits count on `andres-fu`'s
@@ -133,6 +134,10 @@ Stakeholder setup still to do, in order:
   once the gates pass. Protected files still need the stakeholder, and
   summaries carrying long encoded strings are withheld
   (`tools/review/check-summary.mjs`). Revisit if the repo goes public.
+- Rebase merging puts every commit of a PR on `main`, including the
+  deliberately failing "red" test commits. That keeps the test-first history
+  for later analysis, at the cost of `git bisect` stopping on commits whose
+  tests fail by design.
 - Merges made by `github-actions[bot]` do not trigger workflows on `main`; the
   PR already passed every required check.
 - The reviewer is the same model family as the authors; a reviewer from a
