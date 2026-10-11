@@ -4,7 +4,7 @@ title: Pin CI actions and images to exact commits, not tags
 date: 2026-10-11
 project: agent-os
 kind: mistake
-status: proposed
+status: adopted
 rule: Reference every GitHub Action by its full commit SHA (with the version as a comment) and every container image by digest.
 enforced_by: gate
 evidence:
