@@ -36,8 +36,11 @@ for routine work and the rules truly protected. B is not recommended: it is the
 "gate an agent could talk past" that the README promises against.
 
 Either way:
-- The principal engineer and security reviewer have no web access, so untrusted
-  content cannot steer a merge (lesson L-0008).
+- The principal engineer and security reviewer have no web tools and are told
+  not to use the network from the shell. That is an instruction, not a sandbox:
+  their shell could still reach the network or run `gh pr merge` (*observed* by
+  the security review on PR #3). Enforcing it with Claude Code permission rules
+  is a separate stakeholder decision (lesson L-0008).
 - The merging actor is whoever holds merge rights on the PR: the stakeholder in
   A, the bot account (least privilege: contents and pull requests on this repo
   only) in C.

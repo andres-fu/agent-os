@@ -52,7 +52,9 @@ logging or sending it); secrets or tokens; new or upgraded dependencies or CI
 actions; infrastructure, deployment or permissions; LLM features that read
 untrusted input. When in doubt, it is triggered.
 
-Agents whose verdict can allow a merge get no web access (lesson L-0008).
+Reviewers whose verdict gates a merge get no web tools and must not use the
+network from the shell. Today that is an instruction, not a sandbox (lesson
+L-0008).
 
 ## Cost
 - Default to Sonnet. Use Opus for specs, plans and reviews only.
