@@ -4,11 +4,13 @@ A team template for building real software with AI coding agents. Copy it into
 any project and you get:
 
 - **A team with clear roles:** product manager (what), engineering manager (how),
-  developers (test-first), an independent reviewer, QA, and an advisory UX
-  reviewer. Defined in [.claude/agents/](.claude/agents/).
+  developers (test-first), a principal engineer who reviews plans and gives
+  every PR its code review and final sign-off, a security and compliance
+  reviewer for sensitive changes, QA, and an advisory UX reviewer. Defined in
+  [.claude/agents/](.claude/agents/).
 - **You as the executive stakeholder.** Agents escalate major decisions to
   [docs/decisions/](docs/decisions/), the meeting room, and wait for you. You
-  approve specs, adopt lessons, and merge.
+  approve specs, adopt lessons, and own the rules.
 - **Gates that cannot be talked past:** tests, secret scanning, static analysis,
   dependency audit and flagged test edits, all in free CI with no model involved
   ([.github/workflows/gates.yml](.github/workflows/gates.yml)).
@@ -41,11 +43,18 @@ operating system around them:
    `docs/specs/...` as a draft. You approve it.
 2. **Spec → plan.** The `engineering-manager` agent splits it into tasks, each
    owning its own files.
+   For non-trivial plans, the `principal-engineer` reviews the plan first, and
+   `security-compliance` joins if the spec hits a security trigger.
 3. **Plan → code.** A `developer` agent per task, test-first. At most 2–3 at once.
-4. **Code → evidence.** CI runs the gates. The `reviewer` agent reviews the
-   diff in a fresh context. `qa` adds smoke and regression tests.
+4. **Code → evidence.** CI runs the gates. `qa` adds smoke and regression tests.
    `ux-reviewer` comments on UI changes.
-5. **You merge.** Then `/retro` records what the team learned.
+5. **Sign-off.** In a fresh context, the `principal-engineer` checks the code is
+   correct, then judges the whole: should this exist, could we reuse something,
+   does it fit, is the evidence real. `security-compliance` signs off too when
+   triggered.
+6. **Merge**, under the [merge authority](docs/decisions/2026-10-11-merge-authority.md)
+   decision.
+   Then `/retro` records what the team learned.
 
 ## Adopting it in a project
 
@@ -55,8 +64,10 @@ operating system around them:
 3. Optional: install [Dope TDD](https://github.com/andres-fu/dope-tdd) on your
    machine to enforce test-first inside each session, and enable its catch
    check in CI.
-4. Turn on branch protection for `main`: require the `gates` checks and one
-   human approval.
+4. Protect `main` with a ruleset: require a pull request and the `gates`
+   checks, and block force pushes and deletions. Require approvals only if
+   agents work under their own GitHub account; nobody can approve their own PR
+   ([merge authority](docs/decisions/2026-10-11-merge-authority.md)).
 
 ## Budget
 

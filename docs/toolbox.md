@@ -11,13 +11,13 @@ them; confirm each repository before installing.
 
 | Candidate | Role that would use it | What it might give us | Status |
 | --- | --- | --- | --- |
-| Claude Security (anthropics) | reviewer, CI | AI security review of each PR, alongside the deterministic scanners | candidate |
+| Claude Security (anthropics) | security-compliance, CI | AI security review of each PR, alongside the deterministic scanners | candidate |
 | Playwright CLI (microsoft) | qa | Browser smoke tests the agent can drive and CI can run | candidate |
 | Addy Osmani's Agent Skills | product-manager, engineering-manager | Planning and spec skills to compare with our templates | candidate |
 | Hyperframes (heygen-com) | video pipeline (later product) | Programmatic video editing | candidate |
 | Humanizer (blader) | content | Rewrites AI-sounding copy | candidate |
 | Supabase Agent Skills | developer | Database and auth patterns, if we use Supabase | candidate |
-| Stripe best practices (stripe/ai) | developer, reviewer | Payment integration rules, if we take payments | candidate |
+| Stripe best practices (stripe/ai) | developer, security-compliance | Payment integration rules, if we take payments | candidate |
 | Expo Skills | developer | Mobile app patterns, if we build mobile | candidate |
 | Google Workspace CLI | ops | Docs, Sheets, Gmail from the terminal | candidate |
 | Apify MCP Server | research | Web scraping for research tasks (untrusted content: no secrets in that session) | candidate |

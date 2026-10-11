@@ -12,6 +12,10 @@ Fill with what you **observed**. Leave a line blank rather than guess.
 - [ ] Security: no secrets; inputs validated at <boundaries>
 - [ ] Files changed are only those the plan assigned
 
+## Sign-off
+- Principal engineer: <link to comment, with its verdict, for this commit>
+- Security and compliance: not triggered / <link to comment, with its verdict>
+
 ## Escalations
 None / <link to docs/decisions/...>
 
