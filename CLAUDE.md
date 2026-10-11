@@ -7,9 +7,10 @@ fit on a page get followed. Details live in `.claude/agents/` and `docs/`.
 - **The stakeholder (a human)** owns goals, budget, risk and the rules
   themselves. Agents never approve their own work.
 - **Merging** (`docs/decisions/2026-10-11-merge-authority.md`): authors never
-  merge. The `principal-review` workflow merges a PR when the principal engineer
-  approves it in CI and every required check is green; the ruleset enforces
-  that. Changes to the rules are merged by the stakeholder.
+  merge. The `principal-review` workflow merges a PR, by rebase, when the
+  principal engineer approves it in CI and every required check is green.
+  Changes to the rules, specs, and anything the principal engineer escalates
+  are merged by the stakeholder. What enforces each part is in that decision.
 - **Product manager** decides *what*: writes the spec in `docs/specs/`.
 - **Engineering manager** decides *how*: the plan, which files each task touches,
   the interfaces between tasks.
@@ -59,7 +60,10 @@ network from the shell. Today that is an instruction, not a sandbox (lesson
 L-0008).
 
 ## Cost
-- Default to Sonnet. Use Opus for specs, plans and reviews only.
+- Default to Sonnet, including both reviewers. Use Opus for writing specs and
+  plans only.
+- One review per PR: the CI principal engineer. Add `security-compliance` only
+  when a spec, plan or PR hits a trigger above.
 - At most 2–3 agents at once, and only on tasks that touch separate files.
 - Prefer a deterministic check (a test, a linter, a script) over another agent.
 

@@ -3,8 +3,9 @@ import assert from 'node:assert/strict';
 
 import { findProtected, PROTECTED } from './protected-paths.mjs';
 
-test('a PR that only changes code and specs is not protected', () => {
-  const result = findProtected(['src/app.ts', 'tests/app.test.ts', 'docs/specs/2026-10-12-x.md']);
+// Specs were unprotected until 2026-10-11; they now are (see the specs test).
+test('a PR that changes only code, tests and unprotected docs is not protected', () => {
+  const result = findProtected(['src/app.ts', 'tests/app.test.ts', 'docs/notes.md']);
   assert.deepEqual(result, { protected: false, matches: [] });
 });
 
@@ -74,4 +75,9 @@ test('nested package files are not the root manifest', () => {
 test('the landscape is protected: the reviewer trusts it for build-or-reuse', () => {
   assert.equal(findProtected(['docs/landscape.md']).protected, true);
   assert.equal(findProtected(['docs/landscape-notes.md']).protected, false);
+});
+
+test('specs are protected: only the stakeholder approves a spec', () => {
+  assert.equal(findProtected(['docs/specs/2026-10-11-onboard.md']).protected, true);
+  assert.equal(findProtected(['docs/specs-archive/old.md']).protected, false);
 });
