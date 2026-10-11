@@ -1,6 +1,10 @@
 # The team's hard gates. These run without any model, so they cost nothing
 # against the Claude plan and cannot be argued with. A PR merges only when
 # every job is green and the stakeholder approves.
+#
+# Every action and image is pinned to an exact commit or digest: a tag like
+# @v4 can be moved by its owner to different code (lesson L-0007). To update,
+# look up the new tag's commit with `git ls-remote --tags <repo-url>`.
 name: gates
 
 on:
@@ -16,8 +20,8 @@ jobs:
     name: tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
       - name: Install
@@ -29,8 +33,8 @@ jobs:
     name: lessons have evidence
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
       - run: node tools/lessons/lessons.mjs check
@@ -39,28 +43,28 @@ jobs:
     name: no secrets
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
       # Free for personal accounts; an organization needs a GITLEAKS_LICENSE secret.
-      - uses: gitleaks/gitleaks-action@v2
+      - uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   static-analysis:
     name: static analysis
     runs-on: ubuntu-latest
-    container: semgrep/semgrep
+    container: semgrep/semgrep@sha256:93963d9295a366f59e4850127b1550400ee7b388f04fe144e4a1f6325d96e01b
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: semgrep scan --config p/default --error --metrics off
 
   dependencies:
     name: dependency audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
       - name: Audit npm dependencies
@@ -76,7 +80,7 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
       - name: List modified test files
@@ -106,13 +110,14 @@ jobs:
   #   if: github.event_name == 'pull_request'
   #   runs-on: ubuntu-latest
   #   steps:
-  #     - uses: actions/checkout@v4
+  #     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
   #       with:
   #         fetch-depth: 0
-  #     - uses: actions/setup-node@v4
+  #     - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
   #       with:
   #         node-version: 22
   #     - run: npm ci
+  #     # Pin to a commit when enabling, like the actions above.
   #     - uses: andres-fu/dope-tdd/tools/pr-check@main
   #       with:
   #         base: ${{ github.base_ref }}
