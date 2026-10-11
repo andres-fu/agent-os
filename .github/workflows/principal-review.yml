@@ -21,7 +21,7 @@
 # `principal-engineer` in the ruleset's required checks WITH ITS SOURCE SET TO
 # GitHub Actions. That source pin is what stops a status posted from anyone's
 # own account from counting as an approval.
-# Decision: docs/decisions/2026-10-11-merge-authority.md (option D).
+# Decision: docs/decisions/2026-10-11-merge-authority.md (option D2, amendment 1).
 name: principal-review
 
 on:
@@ -180,10 +180,10 @@ jobs:
             cat summary.md
             echo
             if [ "$verdict" = "escalate" ]; then
-              echo "**Escalated to the stakeholder: not approved.** The \`principal-engineer\` check fails, so nobody can merge this PR except the stakeholder, who decides and merges through the ruleset's bypass."
+              echo "**Escalated to the stakeholder: not approved.** The \`principal-engineer\` check fails, so the ruleset blocks this PR. The stakeholder decides; to merge it, they use the ruleset's bypass once it is set up, or edit the ruleset until then."
             fi
             if [ "$protected" = "true" ]; then
-              echo "**Protected files changed:** $(jq -r '.matches | join(", ")' <<<"$guard"). Only the stakeholder merges this PR."
+              echo "**Protected files changed:** $(jq -r '.matches | join(", ")' <<<"$guard"). Only the stakeholder should merge this PR; GitHub enforces that once code-owner review is required."
             fi
             echo
             echo "---"

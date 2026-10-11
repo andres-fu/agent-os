@@ -109,15 +109,24 @@ by merging the PR that adds this section:
 ## What is enforced, by stage
 | Stage | What enforces "agents never merge without approval" |
 | --- | --- |
-| Now: agents still act as `andres-fu` | Approved PRs: the ruleset (required `principal-engineer` from GitHub Actions). Escalated or rejected PRs: the ruleset blocks every merge; until the bypass exists, the stakeholder can only merge one by editing the ruleset. Approved PRs that change protected files: only the deny list and agent instructions, because agents hold the stakeholder's account. **Do not add `andres-fu` to the bypass list in this stage**: agents holding that account would bypass every check. |
+| Now: agents still act as `andres-fu` | Approved PRs: the ruleset (required `principal-engineer` from GitHub Actions). Escalated or rejected PRs: the ruleset blocks every merge; until the bypass exists, the stakeholder can only merge one by editing the ruleset. Approved PRs that change protected files: only the deny list and agent instructions, because agents hold the stakeholder's account. Agents holding that account are also repository admins, so they could edit or disable the ruleset itself; only the deny list and agent instructions stop that. **Do not add `andres-fu` to the bypass list in this stage**: agents holding that account would bypass every check. |
 | After the stakeholder connects Claude to `andres-fu-bot` and adds the ruleset changes below | GitHub. The bot cannot bypass the ruleset, cannot approve its own PRs, and cannot satisfy code-owner review on protected paths. Only `andres-fu` can merge an escalated PR or approve a protected one. |
 
 Stakeholder setup still to do, in order:
 1. Connect Claude's GitHub integration to `andres-fu-bot` (claude.ai/connect-github).
    Settings → General: confirm "Allow rebase merging" is on (auto-merge uses it).
-2. Ruleset `Main`: add `andres-fu` to the bypass list; under "Require a pull
-   request", tick "Require review from Code Owners".
-3. Confirm on the first bot PR that its commits count on `andres-fu`'s
+2. Remove every other `andres-fu` credential agents can reach: on each computer
+   where agents run (Windows, macOS), sign the `gh` CLI and git credential
+   helper in as `andres-fu-bot` for agent work, and revoke any personal access
+   tokens or MCP GitHub servers that use `andres-fu`. Skipping this gives those
+   agents the bypass in the next step.
+3. Ruleset `Main`: add `andres-fu` to the bypass list **for pull requests
+   only**; under "Require a pull request", tick "Require review from Code
+   Owners", "Dismiss stale pull request approvals when new commits are pushed"
+   and "Require approval of the most recent reviewable push". Without the last
+   two, the bot could push after the stakeholder approves and merge on the old
+   approval.
+4. Confirm on the first bot PR that its commits count on `andres-fu`'s
    contribution graph (*unknown* until seen: the rebase rule comes from older
    GitHub Enterprise documentation).
 
@@ -134,6 +143,13 @@ Stakeholder setup still to do, in order:
   once the gates pass. Protected files still need the stakeholder, and
   summaries carrying long encoded strings are withheld
   (`tools/review/check-summary.mjs`). Revisit if the repo goes public.
+- Rebase merging keeps every intermediate commit on `main` for good, so a
+  secret or personal detail added and then removed within a PR stays in
+  history (squash used to drop it). Gitleaks scans every PR commit, which
+  reduces but does not remove this.
+- After a GitHub rebase merge the committer on `main` is GitHub, not the bot or
+  Claude, so the only agent marker is the `Co-Authored-By`/`Claude-Session`
+  trailer. It is a convention today, not a checked gate.
 - Rebase merging puts every commit of a PR on `main`, including the
   deliberately failing "red" test commits. That keeps the test-first history
   for later analysis, at the cost of `git bisect` stopping on commits whose
