@@ -52,8 +52,10 @@ operating system around them:
    correct, then judges the whole: should this exist, could we reuse something,
    does it fit, is the evidence real. `security-compliance` signs off too when
    triggered.
-6. **Merge**, under the [merge authority](docs/decisions/2026-10-11-merge-authority.md)
-   decision.
+6. **Merge.** The author never merges. In CI, the `principal-review` workflow
+   runs the principal engineer from `main`; on Approve, GitHub merges once every
+   required check is green. Changes to the rules wait for you
+   ([merge authority](docs/decisions/2026-10-11-merge-authority.md)).
    Then `/retro` records what the team learned.
 
 ## Adopting it in a project

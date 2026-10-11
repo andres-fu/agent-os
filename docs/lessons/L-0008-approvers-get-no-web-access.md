@@ -27,7 +27,10 @@ not to use the network from the shell. Build-or-reuse checks read
 power and reviewed in PRs.
 
 ## Known gaps
-- The shell rule is an instruction only; their `Bash` tool can still reach the
+- In CI (`principal-review` workflow) the principal engineer's tools are
+  limited to Read, Grep and Glob by `--allowedTools`/`--disallowedTools`, so
+  there the rule is enforced by Claude Code, not by instruction.
+- In local and cloud sessions, the shell rule is an instruction only; their `Bash` tool can still reach the
   network (found by the security review on PR #3). A permission deny list would
   make it a Claude Code permission rule rather than an instruction.
 - `docs/landscape.md` is written from web research, so it is itself a path for

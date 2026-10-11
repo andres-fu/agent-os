@@ -21,6 +21,7 @@ Last reviewed: 2026-10-11.
 | [AIS-OS](https://github.com/nateherkai/AIS-OS) | MIT | Personal AI operating system: onboarding interview, evidence-scored audit, Codex skill mirror, 3D knowledge view | Borrowing `/onboard`, `/audit`, Codex parity and the 3D view (with credit) |
 | [Orca](https://github.com/stablyai/orca) | MIT | Desktop app running parallel coding agents in git worktrees; Windows, macOS, Linux | Host for running the team; not forked |
 | BMAD Method | MIT | Role-based agent method (PM, architect, dev) with PRD and story files | Reference for spec formats |
+| [claude-code-action](https://github.com/anthropics/claude-code-action) | MIT | Anthropic's GitHub Action for Claude Code; runs on a Pro or Max plan through `claude setup-token`; structured output with `--json-schema` | Runs the principal engineer in CI (checked 2026-10-11) |
 | GitHub Spec Kit | MIT | Spec-driven development toolkit for any agent | Reference for spec formats |
 
 Add a row when research finds something relevant, with a link and the date it
