@@ -17,6 +17,7 @@ export const PROTECTED = [
   { path: '.github/', reason: 'CI gates, the review workflow and PR template' },
   { path: 'docs/decisions/', reason: 'decisions only the stakeholder makes' },
   { path: 'docs/lessons/', reason: 'only the stakeholder adopts lessons' },
+  { path: 'docs/landscape.md', reason: 'what the reviewer trusts for build-or-reuse checks' },
   { path: 'tools/', reason: 'the code the gates run, including this rule' },
   { path: 'package.json', reason: 'the test command the gates run' },
   { path: 'package-lock.json', reason: 'the dependencies the gates install' },
