@@ -75,3 +75,8 @@ test('the landscape is protected: the reviewer trusts it for build-or-reuse', ()
   assert.equal(findProtected(['docs/landscape.md']).protected, true);
   assert.equal(findProtected(['docs/landscape-notes.md']).protected, false);
 });
+
+test('specs are protected: only the stakeholder approves a spec', () => {
+  assert.equal(findProtected(['docs/specs/2026-10-11-onboard.md']).protected, true);
+  assert.equal(findProtected(['docs/specs-archive/old.md']).protected, false);
+});
