@@ -78,6 +78,26 @@ it.
   command prefixes, so it **reduces** the risk; it does not prevent a
   determined agent (for example `bash -c`). The ruleset is what prevents it.
 
+## Amendment 1 (2026-10-11): escalations and specs
+Raised by the CI principal engineer on
+[andres-fu/agent-os#8](https://github.com/andres-fu/agent-os/pull/8#issuecomment-6113269613),
+which escalated a spec marked approved: specs were unprotected, so its Approve
+would have auto-merged the stakeholder's approval without the stakeholder
+seeing it. And an `escalate` verdict failed the required check, so the
+stakeholder had no clean way to answer it.
+
+Decided by the stakeholder on 2026-10-11 ("yes go with your recommendation"),
+confirmed by merging the PR that adds this section:
+- **`docs/specs/` is protected.** The stakeholder merges every spec, and that
+  merge is the recorded approval.
+- **`escalate` means the stakeholder decides.** The workflow posts the
+  reviewer's question, never turns on auto-merge, and sets the
+  `principal-engineer` status to success with "Escalated: only the stakeholder
+  may merge", so the stakeholder can merge after reading it.
+- Trade-off, accepted: an escalated PR is mergeable by the shared account, so
+  only the deny list and agent instructions stop an agent from merging it, the
+  same gap as approved protected PRs (option C closes it).
+
 ## Known limits
 - Agents act under the stakeholder's GitHub account. For a PR the reviewer has
   approved but that changes protected files, an agent with that account could

@@ -177,7 +177,9 @@ jobs:
             echo
             cat summary.md
             echo
-            if [ "$protected" = "true" ]; then
+            if [ "$verdict" = "escalate" ]; then
+              echo "**Escalated to the stakeholder.** This PR never auto-merges. Only the stakeholder merges it, after reading the question above."
+            elif [ "$protected" = "true" ]; then
               echo "**Protected files changed:** $(jq -r '.matches | join(", ")' <<<"$guard"). Only the stakeholder merges this PR."
             fi
             echo
@@ -186,6 +188,15 @@ jobs:
           } > comment.md
           gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body-file comment.md
 
+          # Escalate is a question for the stakeholder, not a rejection: the
+          # check passes so the stakeholder can merge, but auto-merge stays off
+          # (docs/decisions/2026-10-11-merge-authority.md, amendment 1).
+          if [ "$verdict" = "escalate" ]; then
+            stop_auto_merge
+            status success "Escalated: only the stakeholder may merge, after reading the review"
+            echo "Escalated: left for the stakeholder; auto-merge is off."
+            exit 0
+          fi
           if [ "$verdict" != "approve" ]; then
             status failure "Verdict: $verdict"
             stop_auto_merge
