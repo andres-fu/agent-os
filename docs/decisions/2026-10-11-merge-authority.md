@@ -40,6 +40,8 @@ CI, decides; the stakeholder keeps the rules.
 | The reviewer reads no untrusted web content | In CI, **Claude Code's tool limits** (Read, Grep, Glob only); in other sessions, an instruction (lesson L-0008) |
 
 ## Known limits
+- While `principal-engineer` is unticked to merge an escalated PR, any PR can
+  merge without CI's approval. Keep that window to the one merge.
 - Agents share the stakeholder's account (see the table). A separate bot account
   would make GitHub enforce the third row; it was considered and set aside as
   too much setup for now. `.github/CODEOWNERS` is ready for it but inactive.
