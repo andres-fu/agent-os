@@ -1,0 +1,18 @@
+# Every protected path (tools/review/protected-paths.mjs) is owned by the
+# stakeholder. tools/review/codeowners.test.mjs keeps the two lists equal.
+/CLAUDE.md @andres-fu
+/AGENTS.md @andres-fu
+/.claude/ @andres-fu
+/.github/ @andres-fu
+/docs/decisions/ @andres-fu
+/docs/lessons/ @andres-fu
+/docs/specs/ @andres-fu
+/docs/landscape.md @andres-fu
+/tools/ @andres-fu
+/package.json @andres-fu
+/package-lock.json @andres-fu
+/.gitleaks.toml @andres-fu
+/.gitleaksignore @andres-fu
+/.semgrepignore @andres-fu
+/.semgrep.yml @andres-fu
+/.semgrep/ @andres-fu
