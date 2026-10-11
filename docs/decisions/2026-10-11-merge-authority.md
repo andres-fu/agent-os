@@ -79,7 +79,7 @@ it.
   command prefixes, so it **reduces** the risk; it does not prevent a
   determined agent (for example `bash -c`). The ruleset is what prevents it.
 
-## Amendment 1 (2026-10-11): specs, escalations, and a bot account (D2)
+## Amendment 1 (2026-10-11): specs and escalations (option B)
 Raised by the CI principal engineer on
 [andres-fu/agent-os#8](https://github.com/andres-fu/agent-os/pull/8#issuecomment-6113269613):
 specs were unprotected, so its Approve would have auto-merged a spec marked
@@ -87,48 +87,47 @@ specs were unprotected, so its Approve would have auto-merged a spec marked
 stakeholder no clean way to merge after deciding. A first fix (an escalated PR
 gets a green check) was rejected after the principal engineer and security
 reviews of [andres-fu/agent-os#9](https://github.com/andres-fu/agent-os/pull/9):
-it let any PR with no approval become mergeable, and text in a PR that steered
-the reviewer to `escalate` would produce a green check.
+it let any PR with no approval become mergeable. A bot account for the agents
+(option D2) was then chosen and set aside by the stakeholder as too much setup
+for now ("i think i wanna skip this bot for now", "seems like too much
+trouble").
 
-Decided by the stakeholder on 2026-10-11 ("let's do D", then "D2"), confirmed
-by merging the PR that adds this section:
+Decided by the stakeholder on 2026-10-11, confirmed by merging the PR that adds
+this section:
 - **`docs/specs/` is protected.** The stakeholder merges every spec; that merge
   is the recorded approval.
-- **`escalate` fails the check**, like `request_changes`. Nobody can merge an
-  escalated PR through the ruleset; the stakeholder answers it by merging
-  through the ruleset's bypass.
-- **Agents act as a bot account, `andres-fu-bot`** (a collaborator with write
-  access). The stakeholder's account, `andres-fu`, is on the ruleset's bypass
-  list. `.github/CODEOWNERS` gives every protected path to `@andres-fu`, and the
-  ruleset requires code-owner review, so a bot PR touching them needs the
-  stakeholder's approval.
-- **Commits are authored as the stakeholder**, pushed by the bot, and merged by
-  **rebase**, so the stakeholder keeps contribution credit (GitHub credits
-  original authors on rebase) and the red-then-green history stays on `main`.
+- **`escalate` fails the check**, like `request_changes`. The ruleset blocks an
+  escalated PR. The stakeholder decides, and merges it by temporarily editing
+  the ruleset (its bypass list is empty). With specs protected, escalations
+  should be rare.
+- **Merges use rebase**, so each commit, including the red-then-green test
+  history, reaches `main`. Commits are authored as the stakeholder and
+  committed by Claude.
 
-## What is enforced, by stage
-| Stage | What enforces "agents never merge without approval" |
-| --- | --- |
-| Now: agents still act as `andres-fu` | Approved PRs: the ruleset (required `principal-engineer` from GitHub Actions). Escalated or rejected PRs: the ruleset blocks every merge; until the bypass exists, the stakeholder can only merge one by editing the ruleset. Approved PRs that change protected files: only the deny list and agent instructions, because agents hold the stakeholder's account. Agents holding that account are also repository admins, so they could edit or disable the ruleset itself; only the deny list and agent instructions stop that. **Do not add `andres-fu` to the bypass list in this stage**: agents holding that account would bypass every check. |
-| After the stakeholder connects Claude to `andres-fu-bot` and adds the ruleset changes below | GitHub. The bot cannot bypass the ruleset, cannot approve its own PRs, and cannot satisfy code-owner review on protected paths. Only `andres-fu` can merge an escalated PR or approve a protected one. |
+## What is enforced today
+- **Approved PRs:** the ruleset (required `principal-engineer` from GitHub
+  Actions) and auto-merge.
+- **Escalated or rejected PRs:** the ruleset blocks every merge.
+- **Approved PRs that change protected files:** only the deny list and agent
+  instructions stop an agent merging them, because agents act under the
+  stakeholder's account. That account is also an admin, so the same applies
+  to editing the ruleset itself.
+- `.github/CODEOWNERS` already names the stakeholder for every protected path
+  (kept equal to `PROTECTED` by a test). It has no effect until the ruleset
+  requires code-owner review, which only makes sense with a bot account.
 
-Stakeholder setup still to do, in order:
-1. Connect Claude's GitHub integration to `andres-fu-bot` (claude.ai/connect-github).
-   Settings → General: confirm "Allow rebase merging" is on (auto-merge uses it).
-2. Remove every other `andres-fu` credential agents can reach: on each computer
-   where agents run (Windows, macOS), sign the `gh` CLI and git credential
-   helper in as `andres-fu-bot` for agent work, and revoke any personal access
-   tokens or MCP GitHub servers that use `andres-fu`. Skipping this gives those
-   agents the bypass in the next step.
-3. Ruleset `Main`: add `andres-fu` to the bypass list **for pull requests
-   only**; under "Require a pull request", tick "Require review from Code
-   Owners", "Dismiss stale pull request approvals when new commits are pushed"
-   and "Require approval of the most recent reviewable push". Without the last
-   two, the bot could push after the stakeholder approves and merge on the old
-   approval.
-4. Confirm on the first bot PR that its commits count on `andres-fu`'s
-   contribution graph (*unknown* until seen: the rebase rule comes from older
-   GitHub Enterprise documentation).
+## If a bot account is adopted later (option D2)
+1. Connect Claude's GitHub integration to the bot, and confirm "Allow rebase
+   merging" is on.
+2. On every computer where agents run, sign `gh` and git in as the bot, and
+   revoke any token or MCP server that uses the stakeholder's account.
+3. Only then, in ruleset `Main`: add the stakeholder to the bypass list (pull
+   requests only); tick "Require review from Code Owners", "Dismiss stale pull
+   request approvals when new commits are pushed" and "Require approval of the
+   most recent reviewable push". Adding the bypass before steps 1-2 would give
+   agents a bypass of every check.
+4. Confirm on the first bot PR that its commits count on the stakeholder's
+   contribution graph.
 
 ## Known limits
 - Agents act under the stakeholder's GitHub account. For a PR the reviewer has

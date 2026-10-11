@@ -1,7 +1,6 @@
 # The principal engineer reviews every pull request here, in CI. Its Approve
-# is required for any merge, except the stakeholder's own merges through the
-# ruleset's bypass (once agents act as a separate bot account). Authors never
-# merge their own work.
+# is required for any merge through the ruleset. Authors never merge their own
+# work.
 #
 # Why pull_request_target: this workflow, the reviewer's role and the
 # protected-paths rule are read from main, so a PR cannot edit the reviewer to
@@ -21,7 +20,7 @@
 # `principal-engineer` in the ruleset's required checks WITH ITS SOURCE SET TO
 # GitHub Actions. That source pin is what stops a status posted from anyone's
 # own account from counting as an approval.
-# Decision: docs/decisions/2026-10-11-merge-authority.md (option D2, amendment 1).
+# Decision: docs/decisions/2026-10-11-merge-authority.md (option D, amendment 1).
 name: principal-review
 
 on:
@@ -180,10 +179,10 @@ jobs:
             cat summary.md
             echo
             if [ "$verdict" = "escalate" ]; then
-              echo "**Escalated to the stakeholder: not approved.** The \`principal-engineer\` check fails, so the ruleset blocks this PR. The stakeholder decides; to merge it, they use the ruleset's bypass once it is set up, or edit the ruleset until then."
+              echo "**Escalated to the stakeholder: not approved.** The \`principal-engineer\` check fails, so the ruleset blocks this PR. The stakeholder decides, and merges it by temporarily editing the ruleset."
             fi
             if [ "$protected" = "true" ]; then
-              echo "**Protected files changed:** $(jq -r '.matches | join(", ")' <<<"$guard"). Only the stakeholder should merge this PR; GitHub enforces that once code-owner review is required."
+              echo "**Protected files changed:** $(jq -r '.matches | join(", ")' <<<"$guard"). Only the stakeholder merges this PR (an agent rule today, not enforced by GitHub)."
             fi
             echo
             echo "---"
@@ -192,7 +191,7 @@ jobs:
           gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body-file comment.md
 
           # Escalate is not an approval: the check fails like a rejection, and
-          # the stakeholder answers by merging through the ruleset's bypass
+          # the stakeholder decides and merges by temporarily editing the ruleset
           # (docs/decisions/2026-10-11-merge-authority.md, amendment 1).
           if [ "$verdict" != "approve" ]; then
             status failure "Verdict: $verdict"
@@ -206,8 +205,8 @@ jobs:
             echo "Approved, but protected files changed: left for the stakeholder to merge."
           else
             # Only the reviewed commit may merge: a later push needs its own review.
-            # Rebase, not squash: each commit keeps its author (the stakeholder's
-            # contribution credit) and the red-then-green test history survives.
+            # Rebase, not squash: each commit and the red-then-green test history
+            # survive on main.
             if ! gh pr merge "$PR" --repo "$GITHUB_REPOSITORY" --auto --rebase --match-head-commit "$HEAD_SHA"; then
               echo "::error::Approved, but auto-merge could not be turned on. Check that 'Allow auto-merge' is on in the repository settings, or merge by hand."
               exit 1

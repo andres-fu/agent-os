@@ -10,8 +10,7 @@ fit on a page get followed. Details live in `.claude/agents/` and `docs/`.
   merge. The `principal-review` workflow merges a PR, by rebase, when the
   principal engineer approves it in CI and every required check is green.
   Changes to the rules, specs, and anything the principal engineer escalates
-  are merged by the stakeholder. What enforces each part, today and after the
-  bot account is connected, is in that decision.
+  are merged by the stakeholder. What enforces each part is in that decision.
 - **Product manager** decides *what*: writes the spec in `docs/specs/`.
 - **Engineering manager** decides *how*: the plan, which files each task touches,
   the interfaces between tasks.
