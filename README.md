@@ -73,8 +73,8 @@ operating system around them:
 
 ## Budget
 
-Designed for a single Claude Max plan: Sonnet by default, Opus only for specs,
-plans and reviews, and every gate in free CI. See the cost section of
+Designed for a single Claude Max plan: Sonnet by default, Opus only for writing
+specs and plans, and every gate in free CI. See the cost section of
 [CLAUDE.md](CLAUDE.md). A plan is for your own work: if you offer this to
 others as a product, each person uses their own Claude login or API key.
 

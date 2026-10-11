@@ -21,8 +21,14 @@ CI, decides; the stakeholder keeps the rules.
   the lockfile and scanner configs): the principal engineer still reviews, and
   the **stakeholder merges**. Merging a spec is the stakeholder's approval of it.
 - **`request_changes` or `escalate`:** the `principal-engineer` check fails, so
-  the ruleset blocks the merge. For an escalation, the stakeholder decides and
-  merges by temporarily editing the ruleset (its bypass list is empty).
+  the ruleset blocks the merge. For an escalation, the stakeholder decides,
+  then:
+  1. unticks `principal-engineer` in the ruleset under required checks;
+  2. merges the PR;
+  3. ticks `principal-engineer` again straight away, with its source still
+     GitHub Actions.
+
+  The bypass list stays empty.
 
 ## What enforces it today
 | Rule | Enforced by |
