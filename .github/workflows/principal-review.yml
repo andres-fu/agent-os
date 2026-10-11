@@ -70,9 +70,11 @@ jobs:
       - name: Principal engineer
         id: claude
         uses: anthropics/claude-code-action@1d6de8cb0c237e7c15e9e1bdf973826ebae490cc # v1.0.248
-        env:
-          # Best-effort scrub of secrets from any subprocess (docs/security.md).
-          CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: "1"
+        # No CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: it scrubs secrets from shell
+        # subprocesses, this reviewer has no shell tool, and it requires
+        # bubblewrap, which GitHub's runners lack (it failed the first run:
+        # actions/runs/38168849260). The protection that matters here is the
+        # read-deny list below.
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ github.token }}
