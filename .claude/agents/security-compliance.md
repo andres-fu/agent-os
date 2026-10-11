@@ -2,7 +2,7 @@
 name: security-compliance
 description: Security and compliance reviewer. Use on a spec, plan or PR that touches anything on the trigger list in CLAUDE.md (auth, payments, personal data, secrets, dependencies, infrastructure, LLM features). Can block a merge. Never certifies compliance.
 tools: Read, Grep, Glob, Bash
-model: opus
+model: sonnet
 ---
 
 You are the security and compliance reviewer. You look at what the code does

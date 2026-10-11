@@ -73,16 +73,18 @@ operating system around them:
 
 ## Budget
 
-Designed for a single Claude Max plan: Sonnet by default, Opus only for specs,
-plans and reviews, and every gate in free CI. See the cost section of
+Designed for a single Claude Max plan: Sonnet by default, Opus only for writing
+specs and plans, and every gate in free CI. See the cost section of
 [CLAUDE.md](CLAUDE.md). A plan is for your own work: if you offer this to
 others as a product, each person uses their own Claude login or API key.
 
 ## Status
 
-Version 0.1, not yet used on a real project. The lessons tool has tests
-(`npm test`). The CI workflow has not run on GitHub yet; expect to fix small
-things on its first run. Candidate tools to try are in
+Version 0.1. The gates and the CI principal engineer run on every PR; the
+tools have tests (`npm test`). Next: `/onboard` (spec in `docs/specs/`), then a
+real project. **On hold** until a real project needs them: Codex support, an
+`/audit` of the team, the 3D knowledge view, a weekly brief, autonomy levels,
+and a bot account for agents. Candidate tools are in
 [docs/toolbox.md](docs/toolbox.md).
 
 ## License
