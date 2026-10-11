@@ -26,7 +26,7 @@ decided_on: 2026-10-11
 | --- | --- | --- | --- |
 | A. Stakeholder merges everything | The agents' instructions only: they use the stakeholder's account, so GitHub cannot stop them merging | Stakeholder time on every PR | Yes |
 | B. Agents merge routine PRs when the gates are green and the principal engineer approves; rules changes are left to the stakeholder by agent discipline | The agents' instructions only | One Opus review per PR | Yes |
-| D. The principal engineer runs in CI from main (`principal-review` workflow); its verdict is a required `principal-engineer` status; on Approve, CI turns on auto-merge unless protected files changed; author agents are denied merge commands by `.claude/settings.json` | GitHub: the reviewer's workflow and rules come from main, the verdict is a required status set by CI, and auto-merge waits for every required check. Claude Code: authors cannot run merge commands | One Opus review per push, on the stakeholder's plan | Yes |
+| D. The principal engineer runs in CI from main (`principal-review` workflow); its verdict is a required `principal-engineer` status; on Approve, CI turns on auto-merge unless protected files changed; author agents are denied common merge commands by `.claude/settings.json` | GitHub, once the ruleset requires the `principal-engineer` status from GitHub Actions: no merge, by anyone without bypass, until CI's reviewer approves the latest commit. Claude Code's deny list only reduces the risk | One Opus review per push, on the stakeholder's plan | Yes |
 | C. As B, but agents work under a separate bot GitHub account; CODEOWNERS marks the rules files, and a ruleset requires code-owner review on them | GitHub itself: a bot cannot approve its own PR, and only the stakeholder owns the rules files | One-time setup of a bot account; GitHub allows one free machine account per person | Yes |
 
 ## Recommendation
@@ -54,21 +54,43 @@ Either way:
 merge your own request"; "yes go ahead"), confirmed by merging the PR that adds
 it.
 
-- **Authors never merge.** `.claude/settings.json` denies agent sessions the
-  merge commands (`gh pr merge`, the GitHub merge and auto-merge tools).
 - **The independent reviewer decides.** The `principal-review` workflow runs the
-  principal engineer from main against the PR's diff as text, with read-only
-  tools, and posts its verdict as the required `principal-engineer` status.
+  principal engineer from main against the PR's diff at its head commit, as
+  text, with read-only tools, and posts its verdict as the `principal-engineer`
+  status.
 - **CI merges.** On Approve, and only if no protected file changed
-  (`tools/review/protected-paths.mjs`), the workflow turns on auto-merge as
-  `github-actions[bot]`; GitHub merges once every required check is green.
-- **The stakeholder merges rules changes**: the charter, `.claude/`,
-  `.github/`, `docs/decisions/`, `docs/lessons/` and `tools/review/`.
+  (`tools/review/protected-paths.mjs`), the workflow turns on auto-merge for
+  that exact commit as `github-actions[bot]`; GitHub merges once every required
+  check is green.
+- **The stakeholder merges rules changes**: the charter, `.claude/`, `.github/`,
+  `docs/decisions/`, `docs/lessons/`, `tools/`, `package.json`, the lockfile and
+  the scanner configs.
+- **Authors never merge.**
 
-Known limits:
-- The stakeholder's own account can still merge anything; that is their right.
-- An agent could still change the rules files in a PR, but cannot merge it.
+## What enforces it
+- **The ruleset, and only once it is set up.** `principal-engineer` must be a
+  required status check **with its source set to GitHub Actions**. Then a status
+  posted from anyone's own account does not count, and no merge (by the GitHub
+  UI, `gh`, the API or auto-merge) can happen until CI's reviewer approves the
+  latest commit. This is the real gate.
+- **`.claude/settings.json`** denies agent sessions `gh pr merge`, `gh api`, the
+  GitHub merge and auto-merge tools, and edits to itself. A deny list matches
+  command prefixes, so it **reduces** the risk; it does not prevent a
+  determined agent (for example `bash -c`). The ruleset is what prevents it.
+
+## Known limits
+- Agents act under the stakeholder's GitHub account. For a PR the reviewer has
+  approved but that changes protected files, an agent with that account could
+  merge it by hand; only agent discipline and the deny list stop that.
+  Option C (a separate bot account) closes this gap.
+- The stakeholder's own account can merge anything after approval; that is
+  their right.
+- Prompt injection in a PR's diff or description could talk the reviewer into
+  approving. It has no shell, web or write access, so the worst case is a wrong
+  approval; the gates and the protected-paths rule still apply, and summaries
+  carrying long encoded strings are withheld (`tools/review/check-summary.mjs`).
+  Revisit if the repo goes public.
 - Merges made by `github-actions[bot]` do not trigger workflows on `main`; the
   PR already passed every required check.
-- The reviewer is the same model family as the authors; a different-vendor
-  reviewer comes with Codex support.
+- The reviewer is the same model family as the authors; a reviewer from a
+  different vendor comes with Codex support.

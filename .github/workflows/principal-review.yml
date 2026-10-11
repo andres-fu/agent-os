@@ -16,7 +16,9 @@
 #
 # Needs: the CLAUDE_CODE_OAUTH_TOKEN secret (run `claude setup-token` on your
 # own machine), "Allow auto-merge" in the repo settings, and
-# `principal-engineer` added to the ruleset's required checks.
+# `principal-engineer` in the ruleset's required checks WITH ITS SOURCE SET TO
+# GitHub Actions. That source pin is what stops a status posted from anyone's
+# own account from counting as an approval.
 # Decision: docs/decisions/2026-10-11-merge-authority.md (option D).
 name: principal-review
 
@@ -49,13 +51,16 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Collect the PR as text
+      - name: Collect the PR as text, at the commit being reviewed
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           mkdir -p .pr-review
-          gh pr diff "$PR" --repo "$GITHUB_REPOSITORY" > .pr-review/diff.patch
+          gh api -H "Accept: application/vnd.github.diff" \
+            "repos/$GITHUB_REPOSITORY/compare/$BASE_SHA...$HEAD_SHA" > .pr-review/diff.patch
           gh pr view "$PR" --repo "$GITHUB_REPOSITORY" \
             --json title,body,author,headRefOid \
             --template '# {{.title}}{{"\n\n"}}Author: {{.author.login}}{{"\n"}}Head: {{.headRefOid}}{{"\n\n"}}{{.body}}' \
@@ -65,9 +70,21 @@ jobs:
       - name: Principal engineer
         id: claude
         uses: anthropics/claude-code-action@1d6de8cb0c237e7c15e9e1bdf973826ebae490cc # v1.0.248
+        env:
+          # Best-effort scrub of secrets from any subprocess (docs/security.md).
+          CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: "1"
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ github.token }}
+          # Keep file reads inside the checkout: no process environment
+          # (/proc), runner internals or system files, where a token could be
+          # read and copied into the summary.
+          settings: |
+            {"permissions": {"deny": [
+              "Read(//proc/**)", "Read(//sys/**)", "Read(//etc/**)",
+              "Read(//home/runner/work/_temp/**)", "Read(//home/runner/work/_actions/**)",
+              "Read(//home/runner/.config/**)", "Read(//home/runner/.claude/**)"
+            ]}}
           prompt: |
             You are the principal engineer for this repository. Read
             .claude/agents/principal-engineer.md and follow it exactly,
@@ -98,7 +115,7 @@ jobs:
   decide:
     name: principal-engineer verdict
     needs: review
-    if: always() && needs.review.result != 'skipped'
+    if: ${{ !cancelled() && needs.review.result != 'skipped' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write        # auto-merge
@@ -114,6 +131,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
           REVIEW_RESULT: ${{ needs.review.result }}
           VERDICT_JSON: ${{ needs.review.outputs.verdict }}
         run: |
@@ -132,14 +150,30 @@ jobs:
             exit 1
           fi
 
-          gh pr diff "$PR" --repo "$GITHUB_REPOSITORY" --name-only > changed.txt
+          # Changed files at the reviewed commit, with the old name of anything
+          # renamed. The compare API lists at most 300 files; more is protected.
+          gh api "repos/$GITHUB_REPOSITORY/compare/$BASE_SHA...$HEAD_SHA" > compare.json
+          jq -r '.files[] | .filename, (.previous_filename // empty)' compare.json > changed.txt
           guard=$(node tools/review/protected-paths.mjs < changed.txt)
           protected=$(jq -r '.protected' <<<"$guard")
+          if [ "$(jq '.files | length' compare.json)" -ge 300 ]; then
+            protected=true
+            guard='{"protected":true,"matches":["more than 300 changed files"]}'
+          fi
+
+          # Never post a summary that carries a long encoded string.
+          jq -r '.summary' <<<"$VERDICT_JSON" > summary.md
+          if ! node tools/review/check-summary.mjs < summary.md; then
+            status failure "Summary withheld: it contained a long encoded string"
+            stop_auto_merge
+            gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body "The principal engineer's summary was withheld because it contained a long encoded string. Treat this PR as not approved and look at its diff and description for injected instructions. [Run]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)"
+            exit 1
+          fi
 
           {
             echo "## Principal engineer (CI): \`$verdict\` on ${HEAD_SHA:0:7}"
             echo
-            jq -r '.summary' <<<"$VERDICT_JSON"
+            cat summary.md
             echo
             if [ "$protected" = "true" ]; then
               echo "**Protected files changed:** $(jq -r '.matches | join(", ")' <<<"$guard"). Only the stakeholder merges this PR."
@@ -161,6 +195,10 @@ jobs:
             stop_auto_merge
             echo "Approved, but protected files changed: left for the stakeholder to merge."
           else
-            gh pr merge "$PR" --repo "$GITHUB_REPOSITORY" --auto --squash
+            # Only the reviewed commit may merge: a later push needs its own review.
+            if ! gh pr merge "$PR" --repo "$GITHUB_REPOSITORY" --auto --squash --match-head-commit "$HEAD_SHA"; then
+              echo "::error::Approved, but auto-merge could not be turned on. Check that 'Allow auto-merge' is on in the repository settings, or merge by hand."
+              exit 1
+            fi
             echo "Approved: auto-merge on; GitHub merges once every required check is green."
           fi
