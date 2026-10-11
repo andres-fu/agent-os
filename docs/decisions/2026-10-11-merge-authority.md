@@ -71,8 +71,11 @@ it.
 - **The ruleset, and only once it is set up.** `principal-engineer` must be a
   required status check **with its source set to GitHub Actions**. Then a status
   posted from anyone's own account does not count, and no merge (by the GitHub
-  UI, `gh`, the API or auto-merge) can happen until CI's reviewer approves the
-  latest commit. This is the real gate.
+  UI, `gh`, the API or auto-merge) can happen until CI's reviewer approves **or
+  escalates** the latest commit. For an approved PR this is the real gate. For
+  an escalated PR it is not: the check is green although nobody approved, so
+  only the stakeholder's own judgement and the deny list below stop a merge
+  (amendment 1).
 - **`.claude/settings.json`** denies agent sessions `gh pr merge`, `gh api`, the
   GitHub merge and auto-merge tools, and edits to itself. A deny list matches
   command prefixes, so it **reduces** the risk; it does not prevent a
@@ -92,11 +95,23 @@ confirmed by merging the PR that adds this section:
   merge is the recorded approval.
 - **`escalate` means the stakeholder decides.** The workflow posts the
   reviewer's question, never turns on auto-merge, and sets the
-  `principal-engineer` status to success with "Escalated: only the stakeholder
-  may merge", so the stakeholder can merge after reading it.
-- Trade-off, accepted: an escalated PR is mergeable by the shared account, so
-  only the deny list and agent instructions stop an agent from merging it, the
-  same gap as approved protected PRs (option C closes it).
+  `principal-engineer` status to success with "Escalated: not approved;
+  stakeholder decision required", so the stakeholder can merge after reading it.
+- **Trade-off.** An escalated PR has **no approval**: the reviewer declined to
+  approve it. Before this amendment the ruleset blocked it outright; now its
+  check is green, and anyone holding the shared account can merge it. Only the
+  deny list and agent instructions stop an agent doing so. This is wider than
+  the gap for approved protected PRs, which at least carry the reviewer's
+  approval. It also means text in a PR that steers the reviewer to `escalate`
+  produces a green check. Option C (a bot account) closes it.
+- **Why not bypass the ruleset instead?** The ruleset's bypass list is empty, so
+  the stakeholder's only other way to merge an escalated PR is to edit or
+  disable the ruleset, which removes protection from every PR while it is off.
+
+*Correction, 2026-10-11:* the first version of this amendment called the
+trade-off "the same gap as approved protected PRs". The principal engineer's
+review of PR #9 showed it is wider. The stakeholder was asked to confirm the
+decision with the corrected description.
 
 ## Known limits
 - Agents act under the stakeholder's GitHub account. For a PR the reviewer has

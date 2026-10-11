@@ -178,7 +178,7 @@ jobs:
             cat summary.md
             echo
             if [ "$verdict" = "escalate" ]; then
-              echo "**Escalated to the stakeholder.** This PR never auto-merges. Only the stakeholder merges it, after reading the question above."
+              echo "**Escalated to the stakeholder: not approved.** This PR never auto-merges. The check is green only so the stakeholder can merge after deciding; nothing else stops a merge, so agents must not merge it."
             elif [ "$protected" = "true" ]; then
               echo "**Protected files changed:** $(jq -r '.matches | join(", ")' <<<"$guard"). Only the stakeholder merges this PR."
             fi
@@ -193,7 +193,7 @@ jobs:
           # (docs/decisions/2026-10-11-merge-authority.md, amendment 1).
           if [ "$verdict" = "escalate" ]; then
             stop_auto_merge
-            status success "Escalated: only the stakeholder may merge, after reading the review"
+            status success "Escalated: not approved; stakeholder decision required"
             echo "Escalated: left for the stakeholder; auto-merge is off."
             exit 0
           fi
