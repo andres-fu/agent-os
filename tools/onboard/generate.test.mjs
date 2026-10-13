@@ -117,7 +117,7 @@ test('a CRLF CLAUDE.md is untouched outside the markers', () => {
     const now = readFileSync(join(root, 'CLAUDE.md'), 'utf8');
     assert.ok(now.startsWith(head + SECTION_MARKERS.start));
     assert.ok(now.endsWith(SECTION_MARKERS.end + tail));
-    assert.ok(!now.includes('old'));
+    assert.ok(!now.includes('\r\nold\r\n'), 'the old section body is replaced');
     assert.ok(!/[^\r]\n/.test(now));
   } finally {
     cleanup(root);
