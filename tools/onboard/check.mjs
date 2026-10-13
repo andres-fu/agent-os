@@ -146,7 +146,8 @@ export function intakeStatus(intake, gate) {
   }
 
   const ticked = Array.isArray(byId.get('Q6')?.data) ? byId.get('Q6').data : [];
-  const note = ticked.some((id) => PERSONAL_DETAILS.includes(id)) ? PERSONAL_NOTE : null;
+  // While blocked, the stop message takes over; the note would wrongly reassure.
+  const note = !blocked && ticked.some((id) => PERSONAL_DETAILS.includes(id)) ? PERSONAL_NOTE : null;
 
   let nextText;
   if (next !== null) nextText = next;

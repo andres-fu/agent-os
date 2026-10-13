@@ -109,8 +109,8 @@ assessed. Save its list with `node tools/onboard/record.mjs record flags`
 > Some rules might apply to the kind of information you described. I cannot tell you whether they do. Please check with your organisation, for example your employer, school district or privacy officer.
 
 Next run `node tools/onboard/check.mjs status`. If status shows a line starting `Note:`,
-the answers involve personal details such as names. That is allowed and does
-not stop anything. Say:
+the answers involve personal details such as names, and nothing highly
+sensitive. That is allowed and does not stop anything. Say:
 
 > The work involves personal details like names. That is fine. Use real names or details only where your organisation allows, and never type them here: this file uses made-up examples only.
 
