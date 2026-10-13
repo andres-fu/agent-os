@@ -2,7 +2,7 @@
 name: onboard
 description: A short, plain-language kickoff for a new project. Learns whose problem the team is solving, what a good result looks like and what data is at stake, and saves it in a living intake. Use when someone says onboard, kickoff, "start a project" or "set this up for me".
 model: sonnet
-allowed-tools: Read, Glob, Grep, Bash(node tools/onboard/*), Agent
+allowed-tools: Read, Glob, Grep, Bash(node tools/onboard/record.mjs:*), Bash(node tools/onboard/check.mjs:*), Agent
 ---
 
 # Onboard: a plain-language kickoff

@@ -2,15 +2,15 @@
 //
 //   node tools/onboard/record.mjs create [--root DIR]            # 1 if it exists
 //   node tools/onboard/record.mjs record <Q1..Q8|setup|flags> [--root DIR] [--dont-know]
-//        [--data id,id] [--decision PATH] [--made-up] [--confirm yes|no] [--answer-file PATH]
+//        [--data id,id] [--decision PATH] [--made-up] [--confirm yes|no]
 //
-// Answers come on stdin (or --answer-file, which must be outside the repo),
-// never on the command line. `record Q5` exits 3 while the data gate blocks.
+// Answers come on stdin only, never on the command line or from a file path.
+// `record Q5` exits 3 while the data gate blocks.
 // Exit codes: 0 done or unchanged, 1 invalid or refused, 2 usage, 3 BLOCKED.
 // No text taken from a file is printed (see check.mjs). Node built-ins only.
 
-import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
-import { isAbsolute, join, relative, resolve, sep } from 'node:path';
+import { existsSync, lstatSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createIntake, parseIntake, recordAnswer, recordSetup } from './intake.mjs';
 import { dataGate } from './data-gate.mjs';
@@ -24,7 +24,7 @@ const MAX_ANSWER_BYTES = 256 * 1024;
 const USAGE =
   'Usage:\n  node tools/onboard/record.mjs create [--root DIR]\n' +
   '  node tools/onboard/record.mjs record <Q1..Q8|setup|flags> [--root DIR] [--dont-know]\n' +
-  '       [--data id,id] [--decision PATH] [--made-up] [--confirm yes|no] [--answer-file PATH]\n' +
+  '       [--data id,id] [--decision PATH] [--made-up] [--confirm yes|no]\n' +
   'The answer is read from standard input.\n';
 
 const done = (out = '') => ({ code: 0, out, err: '' });
@@ -55,22 +55,6 @@ function create(root) {
     return refuse('The intake already exists. Nothing was changed.');
   }
   return done('Created the intake.\n');
-}
-
-/** Reads an answer file that sits outside the repository. -> { text } or { error } */
-function readAnswerFile(root, path) {
-  try {
-    const rootReal = realpathSync(root);
-    const fileReal = realpathSync(resolve(path));
-    const rel = relative(rootReal, fileReal);
-    const inside = rel === '' || (!isAbsolute(rel) && rel !== '..' && !rel.startsWith('..' + sep));
-    if (inside) return { error: 'The answer file must be outside the repository.' };
-    const info = statSync(fileReal);
-    if (!info.isFile() || info.size > MAX_ANSWER_BYTES) return { error: 'The answer file is not a usable file.' };
-    return { text: readFileSync(fileReal, 'utf8') };
-  } catch {
-    return { error: 'The answer file could not be read.' };
-  }
 }
 
 function runGate(gate, intake, root) {
@@ -108,11 +92,7 @@ function record(id, flags, root, stdin, gate) {
   // Whether this command needs an answer text at all.
   const wantsText = !flags['dont-know'] && !(id === 'setup' && flags.confirm !== undefined);
   let text = '';
-  if (flags['answer-file'] !== undefined) {
-    const read = readAnswerFile(root, flags['answer-file']);
-    if (read.error) return refuse(read.error);
-    text = read.text;
-  } else if (wantsText) {
+  if (wantsText) {
     text = typeof stdin === 'function' ? stdin() : (stdin ?? '');
     if (typeof text !== 'string' || Buffer.byteLength(text) > MAX_ANSWER_BYTES) return refuse('The answer is missing or too large.');
   }
@@ -157,7 +137,7 @@ function record(id, flags, root, stdin, gate) {
 export function runRecord(argv, { root, stdin, gate } = {}) {
   try {
     const parsed = parseArgs(argv, {
-      values: ['root', 'data', 'decision', 'confirm', 'answer-file'],
+      values: ['root', 'data', 'decision', 'confirm'],
       bools: ['dont-know', 'made-up'],
     });
     if (parsed.error) return usage(parsed.error);

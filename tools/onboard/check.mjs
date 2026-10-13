@@ -9,7 +9,7 @@
 // path is printed only if it matches its pattern. Node built-ins only.
 
 import { lstatSync, readdirSync, readFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { ASK_ORDER, SECTION_MARKERS, parseIntake } from './intake.mjs';
 import { HIGHLY_SENSITIVE_CATEGORIES, dataGate } from './data-gate.mjs';
@@ -71,6 +71,14 @@ export function parseArgs(argv, { values = [], bools = [] }) {
 /** Reads the intake at root; returns { ok, text } or { ok:false, code, message }. */
 export function readIntakeFile(root) {
   const path = join(root, INTAKE_FILE);
+  // Never read or write through a symlinked docs/ or docs/project/.
+  for (const dir of [join(root, 'docs'), dirname(path)]) {
+    try {
+      if (lstatSync(dir).isSymbolicLink()) return { ok: false, code: 1, message: MESSAGES.symlinkIntake };
+    } catch {
+      return { ok: false, code: 1, message: MESSAGES.noIntake };
+    }
+  }
   let info;
   try {
     info = lstatSync(path);
