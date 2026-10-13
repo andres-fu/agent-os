@@ -180,7 +180,8 @@ Mark confirmed answers with `--made-up`. Do not finish until it passes.
 ## Generate
 
 Run this only after the Setup summary is confirmed and the final check passes.
-Propose 3 to 7 slices: small steps, each one plain sentence, each with a "Done
+Propose 3 to 7 slices: small steps, each one plain sentence ending in a full stop
+(no other full stops, question marks or exclamation marks inside it), each with a "Done
 when" line saying how the person will know it is finished. Mark exactly one
 slice as next. Never use dates or ID numbers in a slice: write "week 2", not a
 calendar date. Show the slices and ask the person to confirm them. Revise until
@@ -192,7 +193,7 @@ Send the confirmed slices as JSON on stdin, never as arguments:
 
 ```
 node tools/onboard/generate.mjs --slices - <<'EOF'
-{"slices":[{"text":"<one sentence>","doneWhen":"<how we know>","next":true}]}
+{"slices":[{"text":"<one sentence ending in a full stop.>","doneWhen":"<how we know>","next":true}]}
 EOF
 ```
 
