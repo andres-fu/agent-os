@@ -48,9 +48,13 @@ test('frontmatter: name onboard, a description, model sonnet', () => {
   assert.match(flat, /Sonnet/);
 });
 
-test('allowed-tools: Read, Glob, Grep, Bash(node tools/onboard/*) and the agent tool', () => {
+test('allowed-tools names the two onboard scripts exactly, not a wildcard path', () => {
   const tools = frontmatter['allowed-tools'].split(/,\s*/);
-  assert.deepEqual(tools, ['Read', 'Glob', 'Grep', 'Bash(node tools/onboard/*)', 'Agent']);
+  assert.deepEqual(tools, [
+    'Read', 'Glob', 'Grep',
+    'Bash(node tools/onboard/record.mjs:*)', 'Bash(node tools/onboard/check.mjs:*)',
+    'Agent',
+  ]);
 });
 
 test('the agent tool is for security-compliance only, as an instruction not enforced', () => {

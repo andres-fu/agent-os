@@ -28,6 +28,15 @@ const read = (root) => readFileSync(intakePath(root), 'utf8');
 function run(root, argv, { stdin = '', gate = open } = {}) {
   return runRecord(argv, { root, stdin, gate });
 }
+function runRecordTemplateIntake() {
+  const scratch = makeRoot();
+  try {
+    assert.equal(run(scratch, ['create']).code, 0);
+    return read(scratch);
+  } finally {
+    cleanup(scratch);
+  }
+}
 function created() {
   const root = makeRoot();
   assert.equal(run(root, ['create']).code, 0);
@@ -243,25 +252,33 @@ test('other questions are not held back by the gate', () => {
   }
 });
 
-test('--answer-file must be outside the repo', () => {
+test('answers come on standard input only: --answer-file is refused', () => {
   const root = created();
   const outside = mkdtempSync(join(tmpdir(), 'answer-'));
   try {
     writeFileSync(join(outside, 'a.txt'), 'From a file outside.\n');
-    assert.equal(run(root, ['record', 'Q1', '--answer-file', join(outside, 'a.txt')]).code, 0);
-    assert.match(read(root), /From a file outside\./);
-
-    writeFileSync(join(root, 'inside.txt'), 'Inside the repo.\n');
-    const inside = run(root, ['record', 'Q2', '--answer-file', join(root, 'inside.txt')]);
-    assert.equal(inside.code, 1);
-    assert.doesNotMatch(read(root), /Inside the repo/);
-
-    symlinkSync(join(root, 'inside.txt'), join(outside, 'link.txt'));
-    assert.equal(run(root, ['record', 'Q2', '--answer-file', join(outside, 'link.txt')]).code, 1, 'symlink into the repo');
-
-    assert.equal(run(root, ['record', 'Q2', '--answer-file', join(outside, 'missing.txt')]).code, 1);
+    const result = run(root, ['record', 'Q1', '--answer-file', join(outside, 'a.txt')]);
+    assert.equal(result.code, 2);
+    assert.doesNotMatch(read(root), /From a file outside/);
   } finally {
     cleanup(root, outside);
+  }
+});
+
+test('record refuses to write through a symlinked docs/project', () => {
+  const root = makeRoot();
+  const elsewhere = mkdtempSync(join(tmpdir(), 'elsewhere-'));
+  try {
+    mkdirSync(join(elsewhere, 'project'));
+    writeFileSync(join(elsewhere, 'project/intake.md'), runRecordTemplateIntake());
+    mkdirSync(join(root, 'docs'));
+    symlinkSync(join(elsewhere, 'project'), join(root, 'docs/project'));
+    const before = readFileSync(join(elsewhere, 'project/intake.md'), 'utf8');
+    const result = run(root, ['record', 'Q1'], { stdin: 'A made-up answer.' });
+    assert.equal(result.code, 1);
+    assert.equal(readFileSync(join(elsewhere, 'project/intake.md'), 'utf8'), before);
+  } finally {
+    cleanup(root, elsewhere);
   }
 });
 
