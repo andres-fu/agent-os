@@ -69,7 +69,10 @@ test('the text version is numbered and shows the real flow', () => {
 
 test('Mermaid edges follow the flow', () => {
   const { mermaid } = parts(renderTeam({ roles: ROLES }));
-  const edge = (a, b) => new RegExp(`\\b${a}\\b[^\\n]*-->[^\\n]*\\b${b}\\b`).test(mermaid);
+  const edge = (a, b) => mermaid.split('\n').some((line) => {
+    const [from, to] = line.split(/-\.?->/);
+    return to !== undefined && from.trim() === a && to.trim().split(/\s+/).pop() === b;
+  });
   assert.ok(edge('person', 'product_manager'));
   assert.ok(edge('product_manager', 'engineering_manager'));
   assert.ok(edge('engineering_manager', 'developer'));
