@@ -290,8 +290,9 @@ test('an intake value starting with :: is never printed by status or validate', 
     answer(root, 'Q6', '::error::names', '--data', 'children', '--decision', DECISION);
     const outputs = [status(root), status(root, noMain, ['--json']), validate(root), validate(root, ['--strict']), validate(root, ['--json'])];
     // Break the intake so the parser fails, with the text in frontmatter and in a block.
-    writeFileSync(intakePath(root), readIntake(root).replace('title: Project intake', 'title: ::error::bad\nbroken: [::oops'));
+    writeFileSync(intakePath(root), readIntake(root).replace('<!-- /onboard:Q2 -->', '::error::owned'));
     outputs.push(status(root), validate(root, ['--strict']));
+    assert.equal(outputs.at(-2).code, 1);
     writeFileSync(join(root, 'docs/project/::error::name.md'), 'x');
     outputs.push(validate(root, ['--strict']));
     for (const r of outputs) {

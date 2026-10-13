@@ -206,14 +206,14 @@ test('record Q5 exits 3 when the gate blocks, naming the decision; allowed when 
   try {
     run(root, ['record', 'Q6', '--data', 'children,names'], { stdin: '' });
     const gate = () => ({ blocked: true, decision: DECISION, reason: 'not on origin/main: run git fetch origin' });
-    const result = run(root, ['record', 'Q5'], { stdin: 'Learner A', gate });
+    const result = run(root, ['record', 'Q5'], { stdin: 'Zed Example', gate });
     assert.equal(result.code, 3);
     assert.equal(
       result.out.split('\n')[0],
       `BLOCKED: awaiting decision ${DECISION} (not on origin/main: run git fetch origin)`,
     );
-    assert.doesNotMatch(read(root), /Learner A/);
-    assert.equal(run(root, ['record', 'Q5'], { stdin: 'Learner A', gate: open }).code, 0);
+    assert.doesNotMatch(read(root), /Zed Example/);
+    assert.equal(run(root, ['record', 'Q5'], { stdin: 'Zed Example', gate: open }).code, 0);
   } finally {
     cleanup(root);
   }
@@ -291,7 +291,7 @@ test('an intake value starting with :: is never printed', () => {
       run(root, ['record', 'Q5'], { stdin: hostile, gate: () => ({ blocked: true, decision: '::error::bad', reason: '::error::why' }) }),
     ];
     // An invalid intake whose frontmatter and a block carry the text.
-    writeFileSync(intakePath(root), '---\ntitle: ::error::bad\nkind: [::oops\n---\n' + read(root));
+    writeFileSync(intakePath(root), read(root).replace('<!-- /onboard:Q2 -->', '::error::owned'));
     results.push(run(root, ['record', 'Q2'], { stdin: 'fine' }));
     for (const r of results) {
       assert.doesNotMatch(r.out + r.err, /::/);
