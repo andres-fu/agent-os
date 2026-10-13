@@ -2,7 +2,7 @@
 name: onboard
 description: A short, plain-language kickoff for a new project. Learns whose problem the team is solving, what a good result looks like and what data is at stake, and saves it in a living intake. Use when someone says onboard, kickoff, "start a project" or "set this up for me".
 model: sonnet
-allowed-tools: Read, Glob, Grep, Bash(node tools/onboard/record.mjs:*), Bash(node tools/onboard/check.mjs:*), Agent
+allowed-tools: Read, Glob, Grep, Bash(node tools/onboard/record.mjs:*), Bash(node tools/onboard/check.mjs:*), Bash(node tools/onboard/generate.mjs:*), Agent
 ---
 
 # Onboard: a plain-language kickoff
@@ -177,11 +177,43 @@ like a real identifier, name the question (never repeat the text) and ask:
 
 Mark confirmed answers with `--made-up`. Do not finish until it passes.
 
+## Generate
+
+Run this only after the Setup summary is confirmed and the final check passes.
+Propose 3 to 7 slices: small steps, each one plain sentence ending in a full stop
+(no other full stops, question marks or exclamation marks inside it), each with a "Done
+when" line saying how the person will know it is finished. Mark exactly one
+slice as next. Never use dates or ID numbers in a slice: write "week 2", not a
+calendar date. Show the slices and ask the person to confirm them. Revise until
+they do.
+
+> Here are the small steps I suggest, each with how we will know it is done. The first one is marked as next: <slices>. Do these look right? Please answer yes or no.
+
+Send the confirmed slices as JSON on stdin, never as arguments:
+
+```
+node tools/onboard/generate.mjs --slices - <<'EOF'
+{"slices":[{"text":"<one sentence ending in a full stop.>","doneWhen":"<how we know>","next":true}]}
+EOF
+```
+
+It writes the backlog, the team diagram (with a plain-text version) and a short
+CLAUDE.md section, and changes nothing else. Running it again changes nothing.
+
+- On exit 3 (BLOCKED): stop as in the blocked path under Q6. Write nothing and
+  build nothing.
+- On exit 1 it refused: read its message and fix the input. If the message
+  says a backlog already exists and differs, ask before using
+  `--replace-backlog`:
+
+> There is already a list of small steps, and it is different from this one. Shall I replace it with the new one? Please answer yes or no.
+
+  Add `--replace-backlog` only when they say yes.
+
 ## Closing screen
 
 Show at most these 5 lines, and nothing more:
 
-> I saved your answers in docs/project/intake.md.
-> The stakeholder reviews and merges the pull request that carries it. It would be public if the project is shared publicly, so it holds only made-up details.
-> Creating the backlog of small steps and the team diagram is not available yet; it arrives in PR 2.
-> Next step: the stakeholder reviews the pull request.
+> I saved your answers in docs/project/intake.md, and wrote the backlog, the team diagram (with a plain-text version) and a short section in CLAUDE.md.
+> The stakeholder reviews and merges the pull request that carries them. It would be public if the project is shared publicly, so it holds only made-up details.
+> Next step: the stakeholder reviews the pull request. After that, the next slice is the one marked next in the backlog.

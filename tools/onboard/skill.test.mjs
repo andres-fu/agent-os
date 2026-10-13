@@ -48,11 +48,12 @@ test('frontmatter: name onboard, a description, model sonnet', () => {
   assert.match(flat, /Sonnet/);
 });
 
-test('allowed-tools names the two onboard scripts exactly, not a wildcard path', () => {
+test('allowed-tools names the three onboard scripts exactly, not a wildcard path', () => {
   const tools = frontmatter['allowed-tools'].split(/,\s*/);
   assert.deepEqual(tools, [
     'Read', 'Glob', 'Grep',
     'Bash(node tools/onboard/record.mjs:*)', 'Bash(node tools/onboard/check.mjs:*)',
+    'Bash(node tools/onboard/generate.mjs:*)',
     'Agent',
   ]);
 });
@@ -222,10 +223,64 @@ test('closing screen is at most 5 lines and covers written files, the PR and the
   assert.match(text, /docs\/project\/intake\.md/);
   assert.match(text, /stakeholder/);
   assert.match(text, /pull request|PR/);
-  assert.match(text, /not available yet/i);
-  assert.match(text, /PR 2/);
+  assert.doesNotMatch(text, /not available yet/i);
+  assert.doesNotMatch(text, /PR 2/);
   assert.match(text, /backlog/);
   assert.match(text, /diagram/);
+  assert.match(text, /text version/i);
+  assert.match(text, /CLAUDE\.md/);
+  assert.match(text, /next slice/i);
+  assert.doesNotMatch(m[1], /PR 2/);
+});
+
+// ---- the generate step (T2.6) -----------------------------------------------
+
+const generate = (() => {
+  const start = body.indexOf('## Generate\n');
+  if (start === -1) return '';
+  const next = body.indexOf('\n## ', start + 1);
+  return body.slice(start, next === -1 ? undefined : next);
+})();
+const generateFlat = generate.replace(/\s+/g, ' ');
+
+test('the generate step comes after Setup and before the closing screen', () => {
+  assert.ok(generate !== '', 'a Generate section');
+  assert.ok(body.indexOf('## Ask setup') < body.indexOf('## Generate'));
+  assert.ok(body.indexOf('## Generate') < body.indexOf('## Closing screen'));
+});
+
+test('the skill names generate.mjs, sends slices on stdin, and still says never merge', () => {
+  assert.match(generate, /node tools\/onboard\/generate\.mjs --slices -/);
+  assert.match(generateFlat, /stdin/i);
+  assert.match(flat, /never merge/i);
+});
+
+test('slices: 3 to 7, one sentence, a Done when, exactly one next, confirmed by the person', () => {
+  assert.match(generateFlat, /3 to 7/);
+  assert.match(generateFlat, /one sentence/i);
+  assert.match(generateFlat, /Done when/);
+  assert.match(generateFlat, /exactly one[^.]*next/i);
+  assert.match(generateFlat, /confirm/i);
+});
+
+test('slices carry no dates or ID numbers', () => {
+  assert.match(generateFlat, /never[^.]*dates[^.]*ID numbers/i);
+  assert.match(generateFlat, /week 2/);
+});
+
+test('exit 3 stops as in the blocked path', () => {
+  assert.match(generateFlat, /exit 3[^.]*stop/i);
+  assert.match(generateFlat, /blocked/i);
+});
+
+test('a changed backlog (exit 1) asks before --replace-backlog', () => {
+  assert.match(generateFlat, /exit 1/);
+  assert.match(generateFlat, /--replace-backlog/);
+  assert.match(generateFlat, /ask[^.]*before[^.]*--replace-backlog/i);
+});
+
+test('the diagram is described as having a plain-text version', () => {
+  assert.ok(personLines.some((l) => /diagram/i.test(l) && /plain-text version/i.test(l)));
 });
 
 test('no secrets, no web: the skill says so and does not use web tools', () => {
@@ -245,4 +300,8 @@ test('a personal-details Note from status is passed on in plain words, and does 
   assert.match(flat, /If status shows a line starting `Note:`/);
   assert.ok(personLines.some((l) => /real names or details only where your organisation allows/.test(l)));
   assert.ok(personLines.some((l) => /never type them here/.test(l)));
+});
+
+test('slices are written the way generate accepts them: one plain sentence ending in a full stop', () => {
+  assert.match(flat, /ending in a full stop/);
 });
