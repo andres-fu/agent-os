@@ -153,6 +153,49 @@ test('non-sensitive ticks are READY with no decision needed', () => {
   }
 });
 
+test('personal details (names, birthdates, family, school) warn but never block (stakeholder, 2026-10-13)', () => {
+  const NOTE = 'Note: this involves personal details. Use real ones only where your organisation allows, and never in this file.';
+  for (const data of ['names', 'birthdates', 'family', 'school', 'names,school,family']) {
+    const root = makeRoot();
+    try {
+      newIntake(root);
+      answer(root, 'Q6', '', '--data', data);
+      const r = status(root);
+      assert.equal(r.code, 0, data);
+      const lines = r.out.split('\n');
+      assert.equal(lines[0], 'READY: no decision needed', data);
+      assert.match(lines[1], /^Next: /, data);
+      assert.equal(lines[2], NOTE, data);
+      assert.equal(JSON.parse(status(root, noMain, ['--json']).out).note, NOTE, data);
+    } finally {
+      cleanup(root);
+    }
+  }
+  const root = makeRoot();
+  try {
+    newIntake(root);
+    answer(root, 'Q6', '', '--data', 'none');
+    assert.doesNotMatch(status(root).out, /^Note:/m, 'no note without personal details');
+    assert.equal(JSON.parse(status(root, noMain, ['--json']).out).note, null);
+  } finally {
+    cleanup(root);
+  }
+});
+
+test('the personal-details note is not shown while blocked, so "that is fine" never precedes a stop', () => {
+  const root = makeRoot();
+  try {
+    newIntake(root);
+    answer(root, 'Q6', '', '--data', 'names,children');
+    const r = status(root);
+    assert.equal(r.code, 3);
+    assert.doesNotMatch(r.out, /^Note:/m);
+    assert.equal(JSON.parse(status(root, noMain, ['--json']).out).note, null);
+  } finally {
+    cleanup(root);
+  }
+});
+
 test('a decision on origin/main that says build makes it READY with the path', () => {
   const root = makeRoot();
   try {

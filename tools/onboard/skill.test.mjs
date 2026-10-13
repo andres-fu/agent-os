@@ -240,3 +240,9 @@ test('the person is told the intake may be public, and that real names never go 
 test('the pull request is for the stakeholder to merge, not the agent', () => {
   assert.match(flat, /stakeholder[^.]*merge/i);
 });
+
+test('a personal-details Note from status is passed on in plain words, and does not stop the interview', () => {
+  assert.match(flat, /If status shows a line starting `Note:`/);
+  assert.ok(personLines.some((l) => /real names or details only where your organisation allows/.test(l)));
+  assert.ok(personLines.some((l) => /never type them here/.test(l)));
+});

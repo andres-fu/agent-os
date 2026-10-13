@@ -108,8 +108,13 @@ assessed. Save its list with `node tools/onboard/record.mjs record flags`
 
 > Some rules might apply to the kind of information you described. I cannot tell you whether they do. Please check with your organisation, for example your employer, school district or privacy officer.
 
-Next run `node tools/onboard/check.mjs status`. If line 1 starts with `READY`,
-go on to Q5. If it starts with `BLOCKED` (exit 3), **stop. Do not ask Q5** or
+Next run `node tools/onboard/check.mjs status`. If status shows a line starting `Note:`,
+the answers involve personal details such as names, and nothing highly
+sensitive. That is allowed and does not stop anything. Say:
+
+> The work involves personal details like names. That is fine. Use real names or details only where your organisation allows, and never type them here: this file uses made-up examples only.
+
+If line 1 starts with `READY`, go on to Q5. If it starts with `BLOCKED` (exit 3), **stop. Do not ask Q5** or
 anything after it, and do not build anything. Say:
 
 > I need to pause here. You told me this may involve sensitive information, or you were not sure. Someone with the authority to decide must say whether, and how, this can go ahead before we go any further. I am writing that request now.

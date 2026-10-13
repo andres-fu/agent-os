@@ -16,6 +16,12 @@ import { HIGHLY_SENSITIVE_CATEGORIES, dataGate } from './data-gate.mjs';
 import { DECISION_PATH, readFromOriginMain } from './git-main.mjs';
 import { findIdentifiers } from './identifiers.mjs';
 
+// Personal details that warn but never block (stakeholder decision, 2026-10-13):
+// the tools a project builds may need real names; the intake never holds them.
+const PERSONAL_DETAILS = ['names', 'birthdates', 'family', 'school'];
+const PERSONAL_NOTE =
+  'Note: this involves personal details. Use real ones only where your organisation allows, and never in this file.';
+
 export const INTAKE_FILE = 'docs/project/intake.md';
 const PROJECT_DIR = 'docs/project';
 const GROUPS = ['Discovery', 'Data', 'Guardrails', 'Setup'];
@@ -139,11 +145,15 @@ export function intakeStatus(intake, gate) {
     line = needsDecision(q6) && path ? `READY: ${path} says build` : 'READY: no decision needed';
   }
 
+  const ticked = Array.isArray(byId.get('Q6')?.data) ? byId.get('Q6').data : [];
+  // While blocked, the stop message takes over; the note would wrongly reassure.
+  const note = !blocked && ticked.some((id) => PERSONAL_DETAILS.includes(id)) ? PERSONAL_NOTE : null;
+
   let nextText;
   if (next !== null) nextText = next;
   else if (blocked) nextText = 'none (raise /escalate before asking Q5)';
   else nextText = 'none (nothing left to ask)';
-  return { gate, line, next: next ?? nextText, open, followUps };
+  return { gate, line, next: next ?? nextText, note, open, followUps };
 }
 
 function groupLines(heading, groups) {
@@ -157,6 +167,7 @@ export function statusLines(status) {
   return [
     status.line,
     `Next: ${status.next}`,
+    ...(status.note ? [status.note] : []),
     ...groupLines('Still open', status.open),
     ...groupLines('Follow-ups (answered "don\'t know")', status.followUps),
   ];
@@ -181,6 +192,7 @@ function runStatus(root, flags, readMain) {
       status: code === 0 ? 'READY' : 'BLOCKED',
       line: status.line,
       next: status.next,
+      note: status.note,
       open: status.open,
       followUps: status.followUps,
     };
