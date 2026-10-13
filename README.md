@@ -60,6 +60,8 @@ operating system around them:
 
 ## Adopting it in a project
 
+Start with `/onboard`, a plain-language interview that saves a living intake (idea from [AIS-OS](https://github.com/nateherkai/AIS-OS), MIT). Then:
+
 1. Copy everything except `docs/lessons/L-*.md` (those are our lessons; keep
    them if they apply to you).
 2. Replace the `tests` job's install and test commands with your project's.
