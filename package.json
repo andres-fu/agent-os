@@ -8,7 +8,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "node --test tools/lessons/lessons.test.mjs tools/review/protected-paths.test.mjs tools/review/check-summary.test.mjs tools/review/codeowners.test.mjs tools/onboard/identifiers.test.mjs tools/onboard/intake.test.mjs tools/onboard/template.test.mjs tools/onboard/data-gate.test.mjs tools/onboard/git-main.test.mjs tools/onboard/ci.test.mjs",
+    "test": "node --test tools/lessons/lessons.test.mjs tools/review/protected-paths.test.mjs tools/review/check-summary.test.mjs tools/review/codeowners.test.mjs tools/onboard/identifiers.test.mjs tools/onboard/intake.test.mjs tools/onboard/template.test.mjs tools/onboard/data-gate.test.mjs tools/onboard/git-main.test.mjs tools/onboard/ci.test.mjs tools/onboard/check.test.mjs tools/onboard/record.test.mjs tools/onboard/skill.test.mjs",
     "lessons:check": "node tools/lessons/lessons.mjs check",
     "lessons:index": "node tools/lessons/lessons.mjs index"
   },

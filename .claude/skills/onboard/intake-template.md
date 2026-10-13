@@ -6,7 +6,7 @@ kind: onboard-intake
 
 This is the living record of what the team is building and for whom. Answer one question at a time. The team updates it as it learns.
 
-Do not type or paste real sensitive data. Use made-up examples, or examples with every real detail removed. This file is committed, and it is public if the repository is public.
+Do not type or paste real sensitive data. Use made-up examples, or examples with every real detail removed. This file is saved in the project for good, and anyone who can see the project can read it.
 
 <!-- onboard:Q1 part=Discovery -->
 ### Q1. What is your work, and who do you do it for?
@@ -40,7 +40,7 @@ Answer:
 Made up:
 <!-- /onboard:Q4 -->
 
-Do not type or paste real sensitive data. Use made-up examples, or examples with every real detail removed. This file is committed, and it is public if the repository is public.
+Do not type or paste real sensitive data. Use made-up examples, or examples with every real detail removed. This file is saved in the project for good, and anyone who can see the project can read it.
 
 <!-- onboard:Q6 part=Data -->
 ### Q6. Will it include any of: names, birthdates, ID numbers, diagnoses, test scores, disability or special-education details, children, health, mental health, family, school or payment details?
@@ -73,7 +73,7 @@ Answer:
 Made up:
 <!-- /onboard:flags -->
 
-Do not type or paste real sensitive data. Use made-up examples, or examples with every real detail removed. This file is committed, and it is public if the repository is public.
+Do not type or paste real sensitive data. Use made-up examples, or examples with every real detail removed. This file is saved in the project for good, and anyone who can see the project can read it.
 
 <!-- onboard:Q5 part=Discovery -->
 ### Q5. Show an example of what you produce today. Use a made-up one, or one with every real detail removed.

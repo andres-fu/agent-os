@@ -72,7 +72,7 @@ short closing screen. Nothing else of AIS-OS is used.
 
 ## Ask Q1
 
-> Do not type or paste real sensitive data. Use made-up examples, or examples with every real detail removed. This file is committed, and it is public if the repository is public.
+> Do not type or paste real sensitive data. Use made-up examples, or examples with every real detail removed. This file is saved in the project for good, and anyone who can see the project can read it.
 
 Ask: the Q1 heading, with its example. Save with
 `node tools/onboard/record.mjs record Q1`.
@@ -92,15 +92,15 @@ Ask: the Q4 heading, with its example. Save with `record Q4`.
 
 ## Ask Q6
 
-> Do not type or paste real sensitive data. Use made-up examples, or examples with every real detail removed. This file is committed, and it is public if the repository is public.
+> Do not type or paste real sensitive data. Use made-up examples, or examples with every real detail removed. This file is saved in the project for good, and anyone who can see the project can read it.
 
 Ask: the Q6 heading, with its example and its boxes. Do not ask Q5 yet. Save
 with `node tools/onboard/record.mjs record Q6 --data <ticked ids, comma
-separated>`, using the box names in the template. "I don't know" is
+separated>`, using the box ids in the template (for example `health, mental-health`). "I don't know" is
 `--dont-know`. Nothing ticked means it is still open: ask again.
 
 Then have `security-compliance` map the answers, using the Agent tool and
-nothing else. Give it the ticked box names only, not the person's other words.
+nothing else. Give it the ticked box ids only, not the person's other words.
 It lists data rules that *might apply*, for example United States
 student-records or special-education law for a school. These are *inferred*, not
 assessed. Save its list with `node tools/onboard/record.mjs record flags`
@@ -116,7 +116,7 @@ anything after it, and do not build anything. Say:
 
 Explain the stop in plain words, as above. Then raise `/escalate`. In the decision file it writes, add two lines that start
 blank: `onboard_outcome:` (the stakeholder sets `build` or `do-not-build`) and
-`onboard_covers:` (the ticked Q6 box names, comma separated). Name the person to
+`onboard_covers:` (the ticked Q6 box ids, comma separated, for example `health, mental-health`). Name the person to
 consult (for a school, its privacy officer) and list what to check: whether
 staff may put this information into an outside AI service and under what
 agreement, district and state privacy rules, special-education records rules,
@@ -130,7 +130,7 @@ fetch, tell the person to run `git fetch origin` or ask the developer to.
 
 ## Ask Q5
 
-> Do not type or paste real sensitive data. Use made-up examples, or examples with every real detail removed. This file is committed, and it is public if the repository is public.
+> Do not type or paste real sensitive data. Use made-up examples, or examples with every real detail removed. This file is saved in the project for good, and anyone who can see the project can read it.
 
 Only reach here when `check.mjs status` says `READY`. Ask: the Q5 heading, with
 its example. Before saving, ask whether it is made up or has every real detail

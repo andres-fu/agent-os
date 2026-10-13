@@ -14,7 +14,7 @@ import { parseFrontmatter } from '../lessons/lessons.mjs';
 
 export const PRIVACY_WARNING =
   'Do not type or paste real sensitive data. Use made-up examples, or examples with every real detail removed. ' +
-  'This file is committed, and it is public if the repository is public.';
+  'This file is saved in the project for good, and anyone who can see the project can read it.';
 
 /** The order the skill asks in. Q6 comes before Q5 so a sensitive project stops before an example is asked for. */
 export const ASK_ORDER = ['Q1', 'Q2', 'Q3', 'Q4', 'Q6', 'Q5', 'Q7', 'Q8', 'setup'];
