@@ -83,12 +83,12 @@ test('contains none of the AIS-OS framework names', () => {
   }
 });
 
-test('nothing the person sees uses a banned word (the fixed warning is exempt)', () => {
+test('nothing the person sees uses a banned word, the privacy warning included', () => {
   assert.ok(personLines.length >= 10, 'person-facing lines are marked with "> "');
   for (const line of personLines) {
-    const shown = line.split(PRIVACY_WARNING).join('');
-    for (const term of BANNED) assert.ok(!hit(shown, term), `"${term}" in: ${line}`);
+    for (const term of BANNED) assert.ok(!hit(line, term), `"${term}" in: ${line}`);
   }
+  for (const term of BANNED) assert.ok(!hit(PRIVACY_WARNING, term), `"${term}" in the privacy warning`);
 });
 
 // ---- ask order and privacy warning (AC-3) -----------------------------------
@@ -134,10 +134,11 @@ test('Q6 names every category, in the template', () => {
   }
 });
 
-test('the skill warns the intake is committed, and public if the repo is', () => {
-  assert.match(flat, /committed/);
-  assert.match(flat, /public if the (repo|repository) is public/);
-  assert.ok(template.includes('committed') && /public if the repository is public/.test(template));
+test('the skill warns, in plain words, that the intake is kept and readable by anyone who can see the project', () => {
+  for (const text of [flat, template]) {
+    assert.match(text, /saved in the project for good/);
+    assert.match(text, /anyone who can see the project can read it/);
+  }
 });
 
 test('the skill asks Q6 before Q5 and says why', () => {

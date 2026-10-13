@@ -121,8 +121,8 @@ test('Q6 has the checkbox ids in order, and a Decision line', () => {
 
 test('the privacy warning appears exactly before Q1, Q6 and Q5 (AC-3)', () => {
   assert.ok(PRIVACY_WARNING.length > 0 && !PRIVACY_WARNING.includes('\n'));
-  assert.match(PRIVACY_WARNING, /committed/);
-  assert.match(PRIVACY_WARNING, /public/);
+  assert.match(PRIVACY_WARNING, /saved in the project for good/);
+  assert.match(PRIVACY_WARNING, /anyone who can see the project can read it/);
   assert.equal(lines.filter((l) => l === PRIVACY_WARNING).length, 3);
   for (const id of ['Q1', 'Q6', 'Q5']) {
     const { start } = block(id);
