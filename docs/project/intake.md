@@ -21,7 +21,7 @@ Made up:
 Example: Typing the same summary again for every learner.
 If you do not know, write: dont-know
 Answer: Contact me at sam.example@example.com about made-up reports.
-Made up:
+Made up: yes
 <!-- /onboard:Q2 -->
 
 <!-- onboard:Q3 part=Discovery -->
