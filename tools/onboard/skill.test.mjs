@@ -301,3 +301,7 @@ test('a personal-details Note from status is passed on in plain words, and does 
   assert.ok(personLines.some((l) => /real names or details only where your organisation allows/.test(l)));
   assert.ok(personLines.some((l) => /never type them here/.test(l)));
 });
+
+test('slices are written the way generate accepts them: one plain sentence ending in a full stop', () => {
+  assert.match(flat, /ending in a full stop/);
+});
