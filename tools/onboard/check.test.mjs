@@ -182,6 +182,20 @@ test('personal details (names, birthdates, family, school) warn but never block 
   }
 });
 
+test('the personal-details note is not shown while blocked, so "that is fine" never precedes a stop', () => {
+  const root = makeRoot();
+  try {
+    newIntake(root);
+    answer(root, 'Q6', '', '--data', 'names,children');
+    const r = status(root);
+    assert.equal(r.code, 3);
+    assert.doesNotMatch(r.out, /^Note:/m);
+    assert.equal(JSON.parse(status(root, noMain, ['--json']).out).note, null);
+  } finally {
+    cleanup(root);
+  }
+});
+
 test('a decision on origin/main that says build makes it READY with the path', () => {
   const root = makeRoot();
   try {
