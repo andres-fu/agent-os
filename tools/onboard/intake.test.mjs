@@ -6,6 +6,7 @@ import { readFileSync } from 'node:fs';
 import {
   ASK_ORDER, PRIVACY_WARNING, Q6_OPTION_WORDS, SECTION_MARKERS,
   createIntake, parseIntake, recordAnswer, recordSetup,
+  hasWord,
 } from './intake.mjs';
 import { parseFrontmatter } from '../lessons/lessons.mjs';
 
@@ -326,4 +327,15 @@ test('text outside the blocks survives a record untouched', () => {
   const noted = fresh().replace('<!-- onboard:Q3', 'A note the team added.\n\n<!-- onboard:Q3');
   const r = mustRecord(noted, 'Q1', { answer: 'one' });
   assert.ok(r.value.includes('A note the team added.'));
+});
+
+test('hasWord matches whole words and phrases, case-insensitively, with no regex built from input', () => {
+  assert.equal(hasWord('We use CI here', 'CI'), true);
+  assert.equal(hasWord('special education', 'CI'), false);
+  assert.equal(hasWord('Run the Test  Command now', 'test command'), true);
+  assert.equal(hasWord('special-education plans', 'education'), true);
+  assert.equal(hasWord('mental-health', 'mental health'), true);
+  assert.equal(hasWord('healthy', 'health'), false);
+  assert.equal(hasWord('a (dot.) or [bracket]', '.'), false);
+  assert.equal(hasWord('', 'health'), false);
 });
