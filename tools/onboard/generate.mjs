@@ -32,7 +32,7 @@ const USAGE = 'Usage: node tools/onboard/generate.mjs [--root DIR] [--slices -] 
 const MSG = {
   incomplete: 'The intake is not complete. Run status and answer what is still open.',
   invalid: 'The intake is not valid. Fix it, or ask the stakeholder.',
-  noSlices: 'Give the slices with --slices PATH or --slices - (JSON on standard input).',
+  noSlices: 'Give the slices as JSON on standard input: --slices -',
   badSlices: 'The slices could not be read. Give JSON like {"slices":[...]}.',
   noRoles: 'There are no roles in .claude/agents.',
   identifier: 'The intake has text that looks like a real identifier, so it was not copied. Remove it from the intake first.',
