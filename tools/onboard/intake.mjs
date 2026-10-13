@@ -105,10 +105,20 @@ const tooBig = (text) => Buffer.byteLength(text, 'utf8') > MAX_BYTES;
 
 // ---- reading a block ------------------------------------------------------
 
+// Lower-cases and turns every run of non-letters, non-digits into one space,
+// so whole words and phrases can be matched with a plain string search.
+const words = (text) => ` ${String(text).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim()} `;
+
+/** True when `phrase` appears in `text` as whole words, ignoring case and punctuation. */
+export function hasWord(text, phrase) {
+  const needle = words(phrase);
+  return needle.trim() !== '' && words(text).includes(needle);
+}
+
 function wordHit(text) {
   return Object.values(Q6_OPTION_WORDS)
     .flat()
-    .some((word) => new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(text));
+    .some((word) => hasWord(text, word));
 }
 
 function fieldLabels(id) {

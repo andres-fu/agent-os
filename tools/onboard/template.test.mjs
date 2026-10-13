@@ -4,7 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { ASK_ORDER, PRIVACY_WARNING, createIntake, parseIntake } from './intake.mjs';
+import { ASK_ORDER, PRIVACY_WARNING, createIntake, parseIntake, hasWord } from './intake.mjs';
 
 const TEMPLATE_URL = new URL('../../.claude/skills/onboard/intake-template.md', import.meta.url);
 const template = readFileSync(TEMPLATE_URL, 'utf8').replace(/\r\n/g, '\n');
@@ -17,7 +17,7 @@ const BANNED = [
   'dependency', 'stack', 'repository', 'CI', 'deploy', 'test command', 'API', 'database',
   'server', 'PII', 'compliance', 'personal data',
 ];
-const bannedIn = (text) => BANNED.filter((term) => new RegExp(`\\b${term}\\b`, 'i').test(text));
+const bannedIn = (text) => BANNED.filter((term) => hasWord(text, term));
 
 function block(id) {
   const start = lines.findIndex((l) => l.startsWith(`<!-- onboard:${id} part=`));
@@ -91,7 +91,7 @@ test('the banned-word matcher is whole-word and case-insensitive', () => {
   assert.deepEqual(bannedIn('special education and test scores'), []);
   assert.deepEqual(bannedIn('We use ci here'), ['CI']);
   assert.deepEqual(bannedIn('a Database and an api'), ['API', 'database'].sort((a, b) => BANNED.indexOf(a) - BANNED.indexOf(b)));
-  assert.deepEqual(bannedIn('Personal  data'), []);
+  assert.deepEqual(bannedIn('Personal  data'), ['personal data'], 'extra spaces do not hide a banned phrase');
   assert.deepEqual(bannedIn('the test command'), ['test command']);
 });
 

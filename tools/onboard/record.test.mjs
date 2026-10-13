@@ -149,7 +149,7 @@ test('Q6 takes --data and --decision; bad ids and paths exit 1', () => {
     assert.match(read(root), /- \[x\] names/);
     assert.match(read(root), /- \[x\] school/);
     assert.equal(run(root, ['record', 'Q6', '--decision', DECISION], { stdin: '' }).code, 0);
-    assert.match(read(root), new RegExp(`Decision: ${DECISION}`));
+    assert.ok(read(root).includes(`Decision: ${DECISION}`));
     assert.equal(run(root, ['record', 'Q6', '--data', 'bogus'], { stdin: '' }).code, 1);
     assert.equal(run(root, ['record', 'Q6', '--decision', '../x.md'], { stdin: '' }).code, 1);
     assert.equal(run(root, ['record', 'Q6', '--dont-know']).code, 0);

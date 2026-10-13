@@ -7,7 +7,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { ASK_ORDER, PRIVACY_WARNING } from './intake.mjs';
+import { ASK_ORDER, PRIVACY_WARNING, hasWord } from './intake.mjs';
 
 const read = (rel) => readFileSync(new URL(rel, import.meta.url), 'utf8').replace(/\r\n/g, '\n');
 const skill = read('../../.claude/skills/onboard/SKILL.md');
@@ -17,7 +17,7 @@ const BANNED = [
   'dependency', 'stack', 'repository', 'CI', 'deploy', 'test command', 'API', 'database',
   'server', 'PII', 'compliance', 'personal data',
 ];
-const hit = (text, term) => new RegExp(`\\b${term}\\b`, 'i').test(text);
+const hit = (text, term) => hasWord(text, term);
 
 const frontmatter = (() => {
   const m = /^---\n([\s\S]*?)\n---\n/.exec(skill);
