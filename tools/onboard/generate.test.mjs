@@ -282,3 +282,15 @@ test('the CLI reads slices from stdin and exits with the right codes', () => {
     cleanup(root, blockedRoot);
   }
 });
+
+test('with no slices and no backlog, the message names only standard input', () => {
+  const root = makeRoot();
+  try {
+    const r = gen(root, [], { stdin: '' });
+    assert.equal(r.code, 2);
+    assert.doesNotMatch(r.err + r.out, /PATH/);
+    assert.match(r.err + r.out, /--slices -/);
+  } finally {
+    cleanup(root);
+  }
+});
