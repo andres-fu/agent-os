@@ -81,3 +81,10 @@ test('specs are protected: only the stakeholder approves a spec', () => {
   assert.equal(findProtected(['docs/specs/2026-10-11-onboard.md']).protected, true);
   assert.equal(findProtected(['docs/specs-archive/old.md']).protected, false);
 });
+
+test('the onboarding intake is protected; the backlog and team diagram are not', () => {
+  assert.equal(findProtected(['docs/project/intake.md']).protected, true);
+  assert.equal(findProtected(['docs/project/backlog.md']).protected, false);
+  assert.equal(findProtected(['docs/project/team.md']).protected, false);
+  assert.equal(findProtected(['docs/project/intake.md.bak']).protected, false);
+});
