@@ -41,23 +41,48 @@ caches them until five minutes before they expire:
 
    ```bash
    git config --local credential.https://github.com.helper ""
-   git config --local --add credential.https://github.com.helper "!node \"$(pwd)/tools/github-app/token.mjs\" credential"
+   git config --local --add credential.https://github.com.helper '!f() { node "$(git rev-parse --show-toplevel)/tools/github-app/token.mjs" credential "$@"; }; f'
    ```
 
    The empty entry clears inherited helpers, such as Git Credential Manager
-   with the stakeholder's login. Pushes from this checkout then go as the App,
-   your own included. Commit authorship is unchanged.
+   with the stakeholder's login. The helper finds the script from the
+   repository's top folder, so it works from any subfolder, and the config
+   holds no local path. This was checked with Git for Windows and a fake
+   cached token. Pushes from this checkout then go as the App, your own
+   included. Commit authorship is unchanged.
 6. **Add the `SessionStart` hook** to `.claude/settings.json` (shown in the
    PR that added this folder).
 7. **Check it:** in a new session, `gh auth status` should report a token from
    `GH_TOKEN`. A push from a branch should show the App, not you, as the
    pusher.
 
+## What enforces what
+| Limit | Enforced by |
+| --- | --- |
+| The App cannot change settings, the ruleset, workflows or secrets | **GitHub:** the App's permissions. Each token also asks only for contents, issues and pull requests (`token.mjs`). |
+| The App cannot push to `main` or merge without the required checks | **GitHub:** the ruleset on `main`, which requires a PR and the `principal-engineer` check |
+| An approval from the App does not count as the stakeholder's | **GitHub, once set:** when approvals are required, require **code owner** review. `.github/CODEOWNERS` names the stakeholder, so the App's approval of its own PR does not satisfy it. Until then, the ruleset requires no approvals, so an App approval changes nothing. |
+| No commits on local `main` | The branch guard hook, best-effort |
+
+## Revoking it
+- In the App's settings, **delete the private key**. Tokens already issued
+  stop within the hour.
+- **Uninstall the App** to stop everything at once.
+- Generate a new key and update `privateKeyPath` to start again.
+
 ## Known limits
 - **Same operating-system user.** Agents run as the stakeholder's Windows or
   macOS user. They could unset `GH_TOKEN`, or read the stakeholder's stored
-  `gh` login or the App's key. The App caps what its key can do. A separate
-  operating-system user for the night shift would remove the rest.
+  `gh` login, the App's key or the cached token. The token cache's file mode
+  is ignored on Windows, so it inherits the folder's permissions. The App caps
+  what its key and tokens can do. A separate operating-system user for the
+  night shift would remove the rest.
+- **The hook can fail outright.** If `node` is missing or the hook never runs,
+  `GH_TOKEN` is not set, and `gh` uses the stakeholder's login. The hook
+  writes `GH_TOKEN=unavailable` before anything else, so a crash or timeout
+  part-way still fails closed. `gh auth status` (setup step 7) is the check.
+- **Other remotes bypass the helper.** An SSH remote, or another clone of the
+  repository, uses whatever credentials it has.
 - **PowerShell needs Claude Code 2.1.296 or later** to receive variables from
   `CLAUDE_ENV_FILE`. Below that, the PowerShell tool's `gh` still uses the
   stakeholder's login (lesson L-0003). Check with `claude --version`.
