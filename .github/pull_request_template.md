@@ -7,6 +7,7 @@ Fill with what you **observed**. Leave a line blank rather than guess.
 - [ ] Tests written first; failing run seen: <paste the failing summary line>
 - [ ] Passing run: <link to the CI run, not a claim>
 - [ ] Each acceptance criterion → test: <criterion → test file:name>
+- [ ] Real run (lesson L-0015): not needed, no external system / <what ran against the real system, and what it printed>
 - [ ] Existing tests changed: none / <file: reason>
 - [ ] New dependencies: none / <name: why, link, maintained?>
 - [ ] Security: no secrets; inputs validated at <boundaries>

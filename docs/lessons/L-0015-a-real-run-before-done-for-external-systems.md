@@ -4,9 +4,9 @@ title: Unit tests share the code's assumptions about other systems; only a real 
 date: 2026-10-21
 project: agent-os
 kind: mistake
-status: proposed
+status: adopted
 rule: Before a change that depends on an external system (an API, a shell, a CI action, a tool's file format) is called done, run it once against the real system and put what you saw in the PR's receipt.
-enforced_by: none
+enforced_by: agent-rule
 evidence:
   - https://github.com/andres-fu/agent-os/issues/24
   - https://github.com/andres-fu/agent-os/issues/26
@@ -37,3 +37,9 @@ red, then green, and was still wrong.
   the env file and a child process checks the variable.
 - Each fix's PR records the live run.
 - The remaining undocumented behaviour has a re-probe issue (#31).
+
+## Adopted
+Adopted by the stakeholder on 2026-10-21, in the session ("L-0015 real run").
+Enforced by an agent-rule: the PR template's evidence receipt has a
+"Real run" line, and the developer role requires it. The CI principal engineer
+checks the receipt.
