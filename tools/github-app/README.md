@@ -104,8 +104,14 @@ caches them until five minutes before they expire:
 - **PowerShell needs Claude Code 2.1.296 or later** to receive variables from
   `CLAUDE_ENV_FILE`. Below that, the PowerShell tool's `gh` still uses the
   stakeholder's login (lesson L-0003). Check with `claude --version`.
-- **`gh` keeps one token per session.** After an hour it fails, until the
-  session is resumed, compacted or restarted. `git push` is never affected,
-  because the helper mints a fresh token each time.
+- **`gh`'s token expires after an hour.** `gh` then fails with `401 Bad
+  credentials`, and never falls back to another login. Refresh it in the same
+  command that needs `gh`, because shell state doesn't persist between tool
+  calls (issue #39):
+  - Bash: `eval "$(node tools/github-app/token.mjs env)" && gh ...`
+  - PowerShell: `node tools/github-app/token.mjs env powershell | Invoke-Expression; gh ...`
+
+  If no token can be minted, it sets `GH_TOKEN=unavailable` and exits 1.
+  `git push` never needs this, because the helper mints a fresh token each time.
 - **Scheduled tasks:** the docs do not say whether they run project hooks.
   The night shift checks its identity before it works.

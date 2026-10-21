@@ -4,6 +4,8 @@
 //
 //   node tools/github-app/token.mjs session-env   # SessionStart hook: GH_TOKEN for gh
 //   node tools/github-app/token.mjs credential get  # git credential helper: a fresh token per push
+//   eval "$(node tools/github-app/token.mjs env)"   # Bash: refresh gh's token mid-session
+//   node tools/github-app/token.mjs env powershell | Invoke-Expression   # the same in PowerShell
 //
 // Reads ~/.agent-os/github-app.json ({ appId, installationId, privateKeyPath })
 // and caches the token in ~/.agent-os/token-cache.json until five minutes
@@ -183,7 +185,23 @@ async function main(args) {
     return 0;
   }
 
-  process.stderr.write('usage: token.mjs session-env | credential get\n');
+  if (command === 'env') {
+    // A refresh for gh mid-session (issue #39): shell state doesn't persist
+    // between tool calls, so the agent evals this in the command that needs gh.
+    // It never prints an empty value: an unset GH_TOKEN would let gh fall back
+    // to the stakeholder's stored login.
+    let token = null;
+    try {
+      token = await getToken({ home, fetch: globalThis.fetch, now });
+    } catch (error) {
+      process.stderr.write(`github-app: ${error.message}; GH_TOKEN set to "unavailable"\n`);
+    }
+    const value = typeof token === 'string' && TOKEN_RE.test(token) ? token : 'unavailable';
+    process.stdout.write(action === 'powershell' ? `$env:GH_TOKEN = '${value}'\n` : `export GH_TOKEN=${value}\n`);
+    return value === 'unavailable' ? 1 : 0;
+  }
+
+  process.stderr.write('usage: token.mjs session-env | credential get | env [powershell]\n');
   return 2;
 }
 
