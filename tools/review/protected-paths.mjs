@@ -28,6 +28,7 @@ export const PROTECTED = [
   { path: '.semgrepignore', reason: 'what static analysis skips' },
   { path: '.semgrep.yml', reason: 'the static analysis rules' },
   { path: '.semgrep/', reason: 'the static analysis rules' },
+  { path: 'dope-tdd.json', reason: 'the test-first guard settings' },
 ];
 
 function normalise(file) {

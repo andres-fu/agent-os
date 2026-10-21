@@ -19,3 +19,4 @@
 /.semgrepignore @andres-fu
 /.semgrep.yml @andres-fu
 /.semgrep/ @andres-fu
+/dope-tdd.json @andres-fu
