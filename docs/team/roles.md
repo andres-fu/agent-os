@@ -85,6 +85,11 @@ Hand-off
   other agents.
 - **Models:** Opus only for writing specs and plans (product-manager,
   engineering-manager). Sonnet for everyone else (charter, Cost).
+- **GitHub identity:** agents act as the agents' GitHub App
+  (`tools/github-app/README.md`). If `gh` answers `401 Bad credentials`, the
+  hour-long token has expired. Refresh it in the same command:
+  `eval "$(node tools/github-app/token.mjs env)" && gh ...`. Never fall back to
+  another login.
 
 ## Inspirations
 These were studied, not copied; the wording here is ours.
