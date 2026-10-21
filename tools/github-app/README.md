@@ -87,6 +87,13 @@ caches them until five minutes before they expire:
   is ignored on Windows, so it inherits the folder's permissions. The App caps
   what its key and tokens can do. A separate operating-system user for the
   night shift would remove the rest.
+- **The baseline can be overridden.** A `GH_TOKEN` in `.claude/settings.local.json`
+  or the user-level settings may take precedence over the project file. Agents
+  are denied editing `.claude/settings.json` only, so this sits with "Same
+  operating-system user" below: possible on purpose, not by accident.
+- **Every Claude session in this repository is an agent session**, the
+  stakeholder's own included. Their `gh` uses the App, or fails if the hook
+  didn't run. The stakeholder's own login is for their own terminal.
 - **The hook can fail outright.** If `node` is missing or the hook never runs,
   `GH_TOKEN` keeps the settings baseline, `unavailable`, so `gh` fails closed.
   The hook also writes `GH_TOKEN=unavailable` before anything else, so a crash
