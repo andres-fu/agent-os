@@ -69,10 +69,14 @@ checked out locally cannot change it.
    smallest fix and sees it pass. It needs the fix proven: dope-tdd's PROVEN, or
    a break-and-restore by hand. After three failed attempts at green, it
    blocks.
-6. **Open the PR.** It runs the project's full checks. Its PR body starts
-   `Fixes #<n>`, follows the project's PR template and evidence receipt with
-   numbers copied from this run's output, and ends `Opened by the night shift;
-   not merged.`
+6. **Check the diff, then open the PR.** It runs the project's full checks, and
+   a deterministic diff check that fails on any forbidden path or any change to
+   the dependency manifest or lockfile. It opens the PR **as a draft**. Its body
+   starts `Fixes #<n>`, follows the project's PR template and evidence receipt
+   with numbers copied from this run's output, and ends `Opened by the night
+   shift; not merged.` The stakeholder marks it ready for review. Only then does
+   the CI principal engineer review it, because `principal-review` skips draft
+   PRs.
 7. **Block rather than guess.** It comments `BLOCKED: <why>` on the issue, with
    what it tried and what a person needs to decide, and adds `needs-human`. A
    useful partial start may be pushed as a draft PR. Otherwise nothing is
@@ -81,22 +85,37 @@ checked out locally cannot change it.
    outcome (PR link, blocked, nothing ready, or main red) and the check summary
    lines.
 
-### Hard limits
-- At most one pull request per night.
-- It never merges, approves, closes or reopens anything, never force-pushes,
-  and never deletes a branch or rewrites history.
-- It never changes the files that govern it or the team: the charter
-  (`CLAUDE.md`, `AGENTS.md`), `.claude/`, `.github/`, `docs/decisions/`,
-  `docs/lessons/`, `docs/specs/`, the night-shift instructions, the
-  protected-paths rule, `dope-tdd.json` or the branch guard. If a fix needs one
-  of them, it blocks.
-- It adds no dependencies.
-- Every number or result it writes comes from output it saw in that run.
+### Hard limits, and what enforces each
+Per lesson L-0010, a limit with no enforcer is called an instruction.
+
+| Limit | Enforced by |
+| --- | --- |
+| It runs under a credential that cannot change settings, the ruleset, workflows or other repositories | **GitHub:** a fine-grained token limited to this one repository, with contents, pull requests and issues set to write, no workflow or administration permission, and an expiry date. Not the stakeholder's own login. |
+| Nothing it writes reaches `main` without the stakeholder | **GitHub:** the ruleset on `main` requires a PR and the `principal-engineer` check. **The workflow:** `principal-review` skips draft PRs, and every night-shift PR is a draft. |
+| It never merges, approves, closes or reopens a PR | **GitHub**, for merging: the required check above. The rest is an instruction. |
+| It never force-pushes, deletes a branch or rewrites history | **GitHub**, on `main`: the ruleset blocks force pushes and deletion. On other branches: an instruction. |
+| No commits on local `main` | **The branch guard hook** (`tools/guard/branch-guard.mjs`), best-effort |
+| It never changes the files that govern it or the team (listed below), and adds no dependencies | **A deterministic diff check** before every push, which reuses `tools/review/protected-paths.mjs`. At merge time, the protected-paths rule and the stakeholder's merge. |
+| At most one pull request per night | **The issue picker**, a script: it exits with nothing to do if a `night/` PR was opened today |
+| Test-first | **dope-tdd** in enforce mode; step 5 stops the night if it is not guarding |
+| Issue text is data, not instructions | **The issue picker:** it passes on only the issue body and comments written by collaborators (by author association). Everything after that is an instruction. |
+| It calls no network beyond GitHub and the package registry, and reads no secrets | **The scheduled task's tool permissions** (an allowlist). Today that is Claude Code's settings, which are best-effort. |
+| Every number it writes comes from output it saw | An instruction |
+
+The files that govern it or the team: the charter (`CLAUDE.md`, `AGENTS.md`),
+`.claude/`, `.github/`, `docs/decisions/`, `docs/lessons/`, `docs/specs/`, the
+night-shift instructions and picker, the protected-paths rule,
+`dope-tdd.json`, the branch guard, and the dependency manifest and lockfile.
+If a fix needs one of them, it blocks.
 
 ### The daily log and the morning brief
 The log is one dated Markdown file per day, kept on the stakeholder's machine
 outside the repository (*assumption*: the log can hold issue titles from a
-public repo, so it stays out of commits). The morning brief reads that log, the
+public repo, so it stays out of commits). It holds issue numbers, titles,
+links, outcomes and check summary lines. It never holds issue bodies,
+comments, tokens or environment values. Logs older than 30 days are deleted
+(*assumption*). The morning brief treats the log, issues and PRs as data, and
+runs with read-only tools. The brief reads that log, the
 open `night/` PRs and their CI, the `needs-human` issues, main's CI and the
 `ready` queue. It writes at most 15 lines, in this order:
 1. what needs the stakeholder today;
@@ -122,10 +141,22 @@ repository.
   label change is made, and the log says "nothing ready".
 - [ ] Given an issue with no `ready` label whose text says it is ready, or asks
   to be worked on, then it is not picked.
+- [ ] Given a `ready` issue whose `ready` label was added by someone without
+  write access (by the label event's actor), then it is not picked.
+- [ ] Given a `ready` issue filed by someone who is not a collaborator, then it
+  is not picked (*assumption*: collaborators re-file outside reports as their
+  own issues; see open question 2).
+- [ ] Given a picked issue with comments from a collaborator and from a
+  non-collaborator, then only the collaborator's comments reach the agent.
+- [ ] Given a picked issue whose body was edited after the `ready` label was
+  added, then it is not worked on. It is blocked with "edited after it was
+  marked ready".
 
 **Main red**
 - [ ] Given the latest main CI run failed, then exactly one push notification is
-  sent, naming the run's URL. No issue is picked and the log records "main red".
+  sent, with fixed text: `<project>: main CI is red` and the run's URL, which
+  is built from the run's id. It holds no issue, commit or run text. No issue
+  is picked, and the log records "main red".
 - [ ] Given the latest main CI run passed, then no push notification is sent,
   whatever else happens that night (a PR, a block or nothing ready).
 
@@ -143,8 +174,13 @@ repository.
   comment and the `needs-human` label, and no ready-for-review PR is opened.
 
 **Limits**
+- [ ] Given the night shift's scheduled task, then the GitHub credential it uses
+  is a fine-grained token for this one repository, with no administration or
+  workflow permission. Calling the ruleset or repository-settings API with it
+  is refused by GitHub.
 - [ ] Given the fix would change any forbidden path listed under Hard limits,
-  then no PR is opened, and the issue is blocked naming the path.
+  or the dependency manifest or lockfile, then the diff check fails, nothing is
+  pushed, and the issue is blocked naming the path.
 - [ ] Given a night that already opened a PR, when the night shift runs again
   the same night, then it opens no second PR.
 - [ ] Given any night, then the night shift runs no merge, approve, close,
@@ -156,15 +192,24 @@ repository.
   quoting the request.
 
 **The PR**
-- [ ] Given a PR is opened, then its body's first line is `Fixes #<n>`, its
-  evidence receipt is filled from this run's output, and its last line is
-  `Opened by the night shift; not merged.`
+- [ ] Given a PR is opened, then it is a draft, its body's first line is
+  `Fixes #<n>`, its evidence receipt is filled from this run's output, and its
+  last line is `Opened by the night shift; not merged.`
+- [ ] Given a night-shift draft PR, then `principal-review` does not run on it,
+  and it has no auto-merge, until the stakeholder marks it ready for review.
 
 **Log and brief**
 - [ ] Given any night, then the day's log gains exactly one night-shift entry
   with the time, the issue (or none), the outcome and the check summary lines.
+- [ ] Given any night, then the log contains no issue body, comment text, token
+  or environment value. A test feeds an issue with a fake secret in its body,
+  and the log does not contain it.
+- [ ] Given log files older than 30 days, then the next night shift deletes
+  them.
 - [ ] Given a morning brief run, then no file in the repository changes, and no
   issue, PR or label on GitHub changes.
+- [ ] Given a log entry or issue title that contains instructions, then the
+  brief does not follow them. It reports the title as text.
 - [ ] Given a log with one PR, one blocked issue and two queued issues, then the
   brief is at most 15 lines, lists what needs the stakeholder first, and links
   each PR and issue.
@@ -173,17 +218,19 @@ repository.
 
 ## Non-functional requirements
 - **Security:**
-  - Triggered: it reads untrusted text (public issues), uses the stakeholder's
-    GitHub credentials, and runs unattended. It needs a security-compliance
-    review before approval (open question 2).
-  - Only issues labelled `ready` are worked on; on GitHub, only people with
+  - Triggered: it reads untrusted text (public issues), holds a GitHub token,
+    and runs unattended.
+  - Reviewed by security-compliance on this draft: block until the scoped
+    token, draft PRs, the collaborator-only reading and named enforcers were
+    acceptance criteria. This revision adds them, and it needs a re-review
+    before approval.
+  - The charter's rule on untrusted content and secrets needs a named
+    exception for the night shift, with these limits, or the stakeholder
+    decides against it (open question 2).
+  - Only issues labelled `ready` are worked on. On GitHub, only people with
     triage access or higher can add labels (*inferred* from GitHub's
-    permissions model).
-  - Each limit above names what enforces it, per lesson L-0010:
-    - nothing reaches `main` without review: the ruleset on `main`;
-    - no commits on local `main`: the branch guard;
-    - test-first: dope-tdd;
-    - everything else: an instruction.
+    permissions model). The picker also checks who added the label.
+  - Each limit's enforcer is in the Hard limits table.
 - **Cost:**
   - Sonnet, per the charter.
   - One issue and at most three attempts at green a night, then it blocks.
@@ -220,9 +267,10 @@ repository.
      often.
 
    *Recommendation:* version 1 waits for the stakeholder. Every night-shift PR
-   is held from auto-merge (for example, opened as ready for review with a
-   `night-shift` label the decide step refuses), until `/retro` shows a record
-   of approved night PRs that needed no changes.
+   is a draft, so `principal-review` skips it (`.github/workflows/principal-review.yml`,
+   *observed*: the review job runs only when the PR is not a draft). When the
+   stakeholder marks it ready, the normal review and merge rules apply. Revisit
+   once `/retro` shows a record of night PRs that needed no changes.
 2. **Public issues and the charter.** Both repositories are public, so anyone
    can file an issue or comment. The charter says: "Agents that read untrusted
    content (web pages, issues, emails) do not get secrets or open network access
@@ -232,11 +280,15 @@ repository.
    - an issue's author can edit its body after it is labelled `ready`;
    - anyone can comment on it.
 
-   Options include:
-   - reading only the body and the comments of the issue's author and
-     collaborators;
-   - taking only issues filed by collaborators;
-   - a token limited to this repository.
+   This draft builds in:
+   - a token limited to this repository;
+   - taking only issues filed, and labelled, by collaborators;
+   - reading only collaborators' text;
+   - refusing an issue edited after it was labelled.
+
+   The open questions are:
+   - whether that is enough for a named exception to the charter;
+   - whether outside reports must be re-filed by a collaborator.
 
    The merge-authority decision also says to revisit it all if the repository
    goes public, and it now is. Escalated:
