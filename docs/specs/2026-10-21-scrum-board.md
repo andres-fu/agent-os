@@ -183,22 +183,22 @@ The rest is a dry run on a test repository.
   works, or the stakeholder accepts a read-only board.
 
 **Labels**
-- [ ] Given the committed label file, every label has a name, a colour and a
-  one-line description, and names follow `prefix:value` or are one of the
+- [ ] Given the committed label file, then every label has a name, a colour and
+  a one-line description, and names follow `prefix:value` or are one of the
   plain labels above.
-- [ ] Given the label file and a repository, the sync script reports what it
-  would create, change or delete. With `--apply`, it changes GitHub to match,
-  and running it again changes nothing.
-- [ ] Given a repository label that isn't in the file, the sync script reports
-  it, and deletes it only with `--prune`.
-- [ ] The sync script defaults to a dry run. It refuses a label file without
-  `ready` or `needs-human`, and `--prune` never deletes or renames `ready` or
-  `needs-human`.
-- [ ] The stakeholder runs `--apply` with their own login. It refuses to run
-  when `GH_TOKEN` belongs to the agents' App, so no agent session or unattended
-  run changes the label set.
-- [ ] The label file is a protected path, owned by the stakeholder in
-  CODEOWNERS, because it shapes the Ready gate.
+- [ ] Given the label file and a repository, then the sync script reports what
+  it would create, change or delete. With `--apply`, it changes GitHub to
+  match, and running it again changes nothing.
+- [ ] Given a repository label that isn't in the file, then the sync script
+  reports it, and deletes it only with `--prune`.
+- [ ] Given no flags, then the sync script makes a dry run. Given a label file
+  without `ready` or `needs-human`, then it refuses. Given `--prune`, then it
+  never deletes or renames `ready` or `needs-human`.
+- [ ] Given `--apply` with the stakeholder's own login, then the sync script
+  runs. Given `GH_TOKEN` belongs to the agents' App, then it refuses, so no
+  agent session or unattended run changes the label set.
+- [ ] Given the label file, then it is a protected path, owned by the
+  stakeholder in CODEOWNERS, because it shapes the Ready gate.
 
 **Ready, and who may set it**
 - [ ] Given an issue whose `ready` label was added by the stakeholder's
@@ -207,11 +207,11 @@ The rest is a dry run on a test repository.
   account other than the stakeholder's, then the picker doesn't treat it as
   Ready, and the morning brief lists it as "ready label not from the
   stakeholder".
-- [ ] The picker identifies the stakeholder by their numeric GitHub user ID,
-  not their login, which can be renamed or reclaimed. Given a label event with
-  no actor, it fails closed.
-- [ ] Given label history, the picker uses only the **latest** `labeled` event
-  for `ready`. It requires that the stakeholder made it, and that no
+- [ ] Given a label event, then the picker identifies the stakeholder by their
+  numeric GitHub user ID, not their login, which can be renamed or reclaimed.
+  Given a label event with no actor, then it fails closed.
+- [ ] Given label history, then the picker uses only the **latest** `labeled`
+  event for `ready`. It requires that the stakeholder made it, and that no
   `unlabeled` event follows.
 - [ ] Given an issue whose title or body changed after the stakeholder's latest
   `ready` event, by anyone but the stakeholder, then the picker doesn't take it.
@@ -227,8 +227,8 @@ The rest is a dry run on a test repository.
   is added.
 - [ ] Given an issue with `proposed-ready` but no stakeholder `ready`, then the
   picker doesn't take it.
-- [ ] Phase 2 only: moving a card into a Ready column, without the
-  stakeholder's `ready` label, makes nothing runnable.
+- [ ] Phase 2 only: given a card moved into a Ready column without the
+  stakeholder's `ready` label, then nothing becomes runnable.
 
 **The tree**
 - [ ] Given a `type:task` issue, then it is a sub-issue of a `type:story`, and
