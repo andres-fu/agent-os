@@ -1,0 +1,55 @@
+---
+title: Now that agent-os is public, what may an unattended agent read, hold and merge?
+status: awaiting-decision   # awaiting-decision | decided | superseded
+raised_by: product-manager (night-shift spec)
+date: 2026-10-21
+decided_by:
+decided_on:
+---
+
+## Context
+- *Observed:* agent-os went public on 2026-10-21. The merge-authority decision
+  ends with "Revisit all of this if the repository goes public."
+  ([2026-10-11-merge-authority.md](2026-10-11-merge-authority.md), Known
+  limits).
+- *Observed:* the part of that decision that faces outsiders still holds.
+  `principal-review` reviews only PRs from this repository
+  (`.github/workflows/principal-review.yml`: `head.repo.full_name ==
+  github.repository`). A fork's PR gets no `principal-engineer` status, so the
+  ruleset blocks its merge, and it never sees the Claude token.
+- *Observed:* the charter says: "Agents that read untrusted content (web pages,
+  issues, emails) do not get secrets or open network access in the same
+  session" (CLAUDE.md, Security).
+- *Observed:* the draft night-shift spec
+  ([2026-10-21-night-shift.md](../specs/2026-10-21-night-shift.md)) reads public
+  issues and comments. It runs under the stakeholder's GitHub login, which has
+  admin rights, and it uses the network to push and open PRs.
+- *Inferred:* labels limit which issues are taken, but not what they say later.
+  An issue's author can edit its body after it is labelled `ready`, and anyone
+  can comment on it.
+- *Inferred:* a night-shift PR is opened from this repository, so the CI
+  reviewer reads its description, and an approved, unprotected PR auto-merges.
+  Text injected into an issue could reach the reviewer through the description
+  the night shift writes, with nobody awake.
+
+## Options
+| Option | Cost | Risk | Reversible? |
+| --- | --- | --- | --- |
+| A. No night shift on public repos | None | None new; the backlog waits for the stakeholder | Yes |
+| B. Night shift with limits: it reads only the issue body and comments from the author and collaborators (by author association); it takes only issues filed by a collaborator; its PRs never auto-merge in version 1; and the charter gains a named, narrow exception for it | A few rules in the spec and a check in the issue picker | Injection through text a collaborator wrote or quoted, or an edit to the body after labelling; mitigated by never auto-merging, and by every PR waiting for the stakeholder | Yes |
+| C. As B, plus the night shift runs under a fine-grained token limited to this repository (contents and pull requests: write; issues: write), not the admin login | Setting up and rotating the token; scheduled tasks must use it | Lowest: a hijacked night cannot change settings, the ruleset or other repositories | Yes |
+
+## Recommendation
+**C, with B's limits from day one.** If the token setup is too much for now,
+run B and record the admin login as an accepted, named risk.
+
+Either way:
+- night-shift PRs wait for the stakeholder until `/retro` shows a clean record;
+- the charter's untrusted-content rule names this exception and its limits, so
+  the rule and the practice agree (lesson L-0010).
+
+Nothing else in the merge-authority decision needs to change for public
+visibility, given the fork check above.
+
+## Decision
+Filled in by the stakeholder: the choice, and anything to watch.
