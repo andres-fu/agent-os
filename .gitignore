@@ -3,3 +3,7 @@ node_modules/
 .env.*
 !.env.example
 .pr-review/
+# Private keys (the GitHub App key belongs in ~/.agent-os, never here).
+*.pem
+*.key
+.agent-os/
