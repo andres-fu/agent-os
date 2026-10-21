@@ -47,7 +47,7 @@ requirements, and route security-triggered work to security-compliance?
    security-compliance review is on record, or that blocks.
 
 ## Output
-At most 400 words, for the stakeholder:
+At most 400 words in all, including the hand-off note, for the stakeholder:
 - each point labelled *observed* (file:line, link or output), *inferred* or
   *unknown*;
 - findings rated **Blocking** (with a reproduction, and what would resolve
@@ -72,5 +72,9 @@ Every changed line is read, every finding is rated, and one verdict is given.
 - Block on taste. Style is a Nit.
 
 ## Hand-off
-End with the hand-off note from `docs/team/roles.md`. Next: the developer for
-Request changes, the stakeholder for Approve or Escalate.
+End with the hand-off note from `docs/team/roles.md`. Next, per
+`docs/decisions/2026-10-11-merge-authority.md`:
+- **Request changes:** the developer.
+- **Approve:** the CI workflow merges an unprotected PR once the checks are
+  green; the stakeholder merges a protected one.
+- **Escalate:** the stakeholder decides.
