@@ -83,7 +83,11 @@ others as a product, each person uses their own Claude login or API key.
 ## Status
 
 Version 0.1. The gates and the CI principal engineer run on every PR; the
-tools have tests (`npm test`). Next: `/onboard` (spec in `docs/specs/`), then a
+tools have tests (`npm test`).
+[Dope TDD](https://github.com/andres-fu/dope-tdd) guards this repository:
+its settings are in [dope-tdd.json](dope-tdd.json) (tests sit beside their
+sources in `tools/`), so a session with the plugin installed refuses a source
+edit until its test was written or seen failing. Next: `/onboard` (spec in `docs/specs/`), then a
 real project. **On hold** until a real project needs them: Codex support, an
 `/audit` of the team, the 3D knowledge view, a weekly brief, autonomy levels,
 and a bot account for agents. Candidate tools are in

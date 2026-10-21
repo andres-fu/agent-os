@@ -1,0 +1,8 @@
+{
+  "mode": "enforce",
+  "stack": "node",
+  "layout": {
+    "source": "tools/{module}.{ext}",
+    "test": "tools/{module}.test.{ext}"
+  }
+}
