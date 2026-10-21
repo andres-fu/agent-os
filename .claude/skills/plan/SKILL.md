@@ -1,7 +1,7 @@
 ---
 name: plan
 description: The engineering manager's procedure for turning an approved spec into a plan - approach, contracts, one-PR tasks with file ownership, AC coverage, enforcers, risks and routed reviews - checked by tools/plan/check.mjs before it is handed on. Use when planning an approved spec.
-allowed-tools: Read, Glob, Grep, Write, Bash(node tools/plan/check.mjs:*)
+allowed-tools: Read, Glob, Grep, Bash(node tools/plan/check.mjs:*)
 ---
 
 # Plan an approved spec

@@ -121,6 +121,16 @@ test('waves are scoped to their own task table: two PRs may each have a wave A',
   assert.deepEqual(checkPlan(plan({ tasks }), { specText: APPROVED_SPEC }), []);
 });
 
+test('a wave has at most three tasks (CLAUDE.md, Cost: at most 2-3 agents at once)', () => {
+  const row = (n) => `| T${n} Part ${n} | A | \`tools/x/p${n}.mjs\` | AC-${n} | t |`;
+  const header = ['| Task | Wave | Files it may change | ACs | First failing test |', '| --- | --- | --- | --- | --- |'];
+  const three = [...header, row(1), row(2), row(3)].join('\n');
+  assert.deepEqual(checkPlan(plan({ tasks: three }), { specText: APPROVED_SPEC }), []);
+  const four = [...header, row(1), row(2), row(3), row(4)].join('\n');
+  const problems = checkPlan(plan({ tasks: four }), { specText: APPROVED_SPEC });
+  assert.ok(problems.some((p) => /wave A has 4 tasks/.test(p)), problems.join('\n'));
+});
+
 test('the same file in tasks of different waves is fine', () => {
   // The default fixture puts parse.mjs in T1 (wave A) and T3 (wave B).
   assert.deepEqual(checkPlan(plan(), { specText: APPROVED_SPEC }), []);

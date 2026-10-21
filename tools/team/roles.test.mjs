@@ -89,6 +89,12 @@ test('the engineering manager preloads its /plan procedure, and the skill exists
   assert.match(skill, /^name: plan$/m);
   assert.match(skill, /node tools\/plan\/check\.mjs/);
   assert.doesNotMatch(skill, /^disable-model-invocation: true$/m, 'a skill with disable-model-invocation cannot be preloaded');
+  // allowed-tools skips permission prompts for whoever runs the skill, so it
+  // pre-approves reading and the checker only, never writes (security review of #38).
+  const allowed = (skill.match(/^allowed-tools:(.*)$/m)?.[1] ?? '').split(',').map((tool) => tool.trim());
+  for (const tool of ['Write', 'Edit', 'NotebookEdit']) {
+    assert.ok(!allowed.includes(tool), `/plan pre-approves ${tool}`);
+  }
 });
 
 test('no role can start other agents', () => {
