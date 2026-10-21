@@ -32,6 +32,13 @@ decided_on:
   Text injected into an issue could reach the reviewer through the description
   the night shift writes, with nobody awake.
 
+- *Observed:* the stakeholder answered part of this in the session on
+  2026-10-21: "I should handle all issues from people outside us - I can be
+  that final gate." Outside issues reach the night shift only after the
+  stakeholder re-files them as their own. That removes outsiders as authors of
+  anything the night shift reads. It does not settle the credential question
+  below.
+
 ## Options
 | Option | Cost | Risk | Reversible? |
 | --- | --- | --- | --- |
