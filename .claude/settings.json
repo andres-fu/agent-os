@@ -21,6 +21,18 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/tools/github-app/token.mjs\" session-env",
+            "timeout": 15
+          }
+        ]
+      }
     ]
   }
 }
+
