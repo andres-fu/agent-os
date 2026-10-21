@@ -159,6 +159,24 @@ test('git gets the token for github.com over https, and nothing for any other ho
   assert.equal(credentialResponse('protocol=https\nhost=github.com.evil.example\n', 'ghs_abc'), '');
 });
 
+// Real installation tokens are long and contain `.` and `-` (observed 2026-10-21:
+// 383 characters, starting ghs_). The short letters-digits-underscore form is older.
+const REAL_SHAPE = `ghs_${'Ab1'.repeat(40)}.${'x_Y-9'.repeat(50)}`;
+
+test('a real-shaped token is accepted everywhere it is used', async () => {
+  assert.equal(sessionEnvLine(REAL_SHAPE), `GH_TOKEN=${REAL_SHAPE}\n`);
+  assert.equal(isFresh({ token: REAL_SHAPE, expires_at: '2099-01-01T00:00:00Z' }, NOW), true);
+  const fetch = fakeFetch(201, { token: REAL_SHAPE, expires_at: '2027-01-15T09:00:00Z' });
+  const minted = await mintToken({ appId: '123', installationId: '456', privateKey, fetch, now: NOW });
+  assert.equal(minted.token, REAL_SHAPE);
+});
+
+test('a token with characters that could break the env file or git input is refused', () => {
+  for (const bad of ['ghs_a\nb', 'ghs_a b', 'ghs_a/b', 'ghs_a\\b', 'ghs_$x', 'ghs_"x', "ghs_'x", 'ghs_a=b']) {
+    assert.equal(sessionEnvLine(bad), 'GH_TOKEN=unavailable\n', JSON.stringify(bad));
+  }
+});
+
 test('the session line sets GH_TOKEN, and fails closed when there is no token', () => {
   assert.equal(sessionEnvLine('ghs_abc'), 'GH_TOKEN=ghs_abc\n');
   // A missing or odd token must never leave GH_TOKEN unset: gh would fall back
