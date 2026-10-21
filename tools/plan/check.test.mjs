@@ -6,7 +6,8 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
@@ -154,10 +155,19 @@ test('CRLF line endings are read the same', () => {
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const script = fileURLToPath(new URL('./check.mjs', import.meta.url));
 
-test('the existing /onboard plan passes, through the command line', () => {
-  const run = spawnSync(process.execPath, [script, 'docs/specs/2026-10-11-onboard-plan.md'], { cwd: ROOT, encoding: 'utf8' });
-  assert.equal(run.status, 0, run.stdout + run.stderr);
-  assert.match(run.stdout, /^ok: /);
+// The gate: every plan in docs/specs/ passes, so the CI tests job refuses a PR
+// with a plan that breaks the rules (a shared file in a wave, a missing review).
+const PLANS = readdirSync(join(ROOT, 'docs/specs'))
+  .filter((file) => file.endsWith('-plan.md'))
+  .map((file) => `docs/specs/${file}`);
+
+test('every plan in docs/specs passes, through the command line', () => {
+  assert.ok(PLANS.includes('docs/specs/2026-10-11-onboard-plan.md'), PLANS.join(', '));
+  for (const file of PLANS) {
+    const run = spawnSync(process.execPath, [script, file], { cwd: ROOT, encoding: 'utf8' });
+    assert.equal(run.status, 0, `${file}\n${run.stdout}${run.stderr}`);
+    assert.match(run.stdout, /^ok: /);
+  }
 });
 
 test('the command line exits 1 and lists problems for a bad plan, and 2 without a path', () => {

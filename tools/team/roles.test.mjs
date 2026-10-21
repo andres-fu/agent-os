@@ -83,17 +83,33 @@ function preloads(name) {
   return list ? list[1].split('\n').map((line) => line.replace(/^\s+- /, '').trim()).filter(Boolean) : [];
 }
 
-test('the engineering manager preloads its /plan procedure, and the skill exists', () => {
-  assert.deepEqual(preloads('engineering-manager'), ['plan']);
-  const skill = readFileSync(fileURLToPath(new URL('../../.claude/skills/plan/SKILL.md', import.meta.url)), 'utf8');
-  assert.match(skill, /^name: plan$/m);
-  assert.match(skill, /node tools\/plan\/check\.mjs/);
-  assert.doesNotMatch(skill, /^disable-model-invocation: true$/m, 'a skill with disable-model-invocation cannot be preloaded');
-  // allowed-tools skips permission prompts for whoever runs the skill, so it
-  // pre-approves reading and the checker only, never writes (security review of #38).
-  const allowed = (skill.match(/^allowed-tools:(.*)$/m)?.[1] ?? '').split(',').map((tool) => tool.trim());
-  for (const tool of ['Write', 'Edit', 'NotebookEdit']) {
-    assert.ok(!allowed.includes(tool), `/plan pre-approves ${tool}`);
+// Each procedure skill, the roles that preload it, and the checker its output
+// must pass. Roles without a procedure skill preload nothing yet.
+const PROCEDURES = {
+  plan: { roles: ['engineering-manager'], checker: 'node tools/plan/check.mjs' },
+  spec: { roles: ['product-manager'], checker: 'node tools/spec/check.mjs' },
+  review: { roles: ['principal-engineer', 'security-compliance'], checker: 'node tools/review/check-review.mjs' },
+};
+
+test('each role preloads exactly its procedure skills', () => {
+  for (const name of ROLES) {
+    const expected = Object.keys(PROCEDURES).filter((skill) => PROCEDURES[skill].roles.includes(name));
+    assert.deepEqual(preloads(name), expected, name);
+  }
+});
+
+test('each procedure skill exists, can be preloaded, names its checker, and pre-approves no writes', () => {
+  for (const [name, { checker }] of Object.entries(PROCEDURES)) {
+    const skill = readFileSync(fileURLToPath(new URL(`../../.claude/skills/${name}/SKILL.md`, import.meta.url)), 'utf8');
+    assert.match(skill, new RegExp(`^name: ${name}$`, 'm'), name);
+    assert.ok(skill.includes(checker), `${name}: does not name ${checker}`);
+    assert.doesNotMatch(skill, /^disable-model-invocation: true$/m, `${name}: disable-model-invocation can't be preloaded`);
+    // allowed-tools skips permission prompts for whoever runs the skill, so it
+    // pre-approves reading and the checker only, never writes (security review of #38).
+    const allowed = (skill.match(/^allowed-tools:(.*)$/m)?.[1] ?? '').split(',').map((tool) => tool.trim());
+    for (const tool of ['Write', 'Edit', 'NotebookEdit']) {
+      assert.ok(!allowed.includes(tool), `/${name} pre-approves ${tool}`);
+    }
   }
 });
 
