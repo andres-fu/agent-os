@@ -14,6 +14,8 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const CLASSIFICATIONS = ['trivial', 'non-trivial'];
+// CLAUDE.md, Cost: at most 2-3 agents at once.
+const MAX_TASKS_PER_WAVE = 3;
 const REQUIRED_FIELDS = ['title', 'spec', 'status', 'classification', 'owner', 'date'];
 // Headings are matched by prefix, so "What enforces each protection (L-0010)" counts.
 const REQUIRED_SECTIONS = [
@@ -134,7 +136,13 @@ export function checkPlan(planText, { specText }) {
     const rows = taskRows(tasks);
     if (rows.length === 0) problems.push('Tasks: no task table (columns Task, Wave, "Files it may change")');
     const owner = new Map();
+    const perWave = new Map();
     for (const row of rows) {
+      const wave = `${row.table}\n${row.wave}`;
+      perWave.set(wave, (perWave.get(wave) ?? 0) + 1);
+      if (perWave.get(wave) === MAX_TASKS_PER_WAVE + 1) {
+        problems.push(`Tasks: wave ${row.wave} has ${MAX_TASKS_PER_WAVE + 1} tasks or more; at most ${MAX_TASKS_PER_WAVE} run at once`);
+      }
       if (row.paths.length === 0) problems.push(`Tasks: ${row.id} names no files it may change`);
       for (const path of row.paths) {
         const key = `${row.table}\n${row.wave}\n${path}`;
