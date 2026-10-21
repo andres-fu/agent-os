@@ -46,7 +46,18 @@ fit on a page get followed. Details live in `.claude/agents/` and `docs/`.
 ## Security (shift left)
 - Never commit secrets; CI scans for them on every push.
 - Agents that read untrusted content (web pages, issues, emails) do not get
-  secrets or open network access in the same session.
+  secrets or open network access in the same session. **One named
+  exception:**
+  - **What it covers:** the night shift may read issues whose `ready` label
+    was added by the stakeholder's own account (the label event's actor),
+    while holding the agents' GitHub App token. It reads only collaborators'
+    text, refuses an issue edited after labelling, and opens only draft PRs.
+  - **Nothing else:** no other agent, session or untrusted source.
+  - **When it applies:** only once `docs/specs/2026-10-21-night-shift.md` is
+    approved by the stakeholder and its enforcers are built and tested. Until
+    then the rule above applies in full.
+
+  Decision: `docs/decisions/2026-10-21-public-repo-and-night-shift.md`.
 - Validate input at every boundary. Least privilege for tokens and tools.
 
 ### Security review triggers
