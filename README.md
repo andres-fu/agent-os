@@ -7,7 +7,9 @@ any project and you get:
   developers (test-first), a principal engineer who reviews plans and gives
   every PR its code review and final sign-off, a security and compliance
   reviewer for sensitive changes, QA, and an advisory UX reviewer. Defined in
-  [.claude/agents/](.claude/agents/).
+  [.claude/agents/](.claude/agents/). Each role is a contract, not a persona:
+  what it owns, what it outputs, when it stops and what it never does, plus a
+  shared team oath ([docs/team/roles.md](docs/team/roles.md)).
 - **You as the executive stakeholder.** Agents escalate major decisions to
   [docs/decisions/](docs/decisions/), the meeting room, and wait for you. You
   approve specs, adopt lessons, and own the rules.
