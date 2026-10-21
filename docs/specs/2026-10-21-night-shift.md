@@ -142,8 +142,10 @@ repository.
   label change is made, and the log says "nothing ready".
 - [ ] Given an issue with no `ready` label whose text says it is ready, or asks
   to be worked on, then it is not picked.
-- [ ] Given a `ready` issue whose `ready` label was added by someone without
-  write access (by the label event's actor), then it is not picked.
+- [ ] Given a `ready` issue whose `ready` label was added by any account other
+  than the stakeholder's (by the label event's actor), including the agents'
+  App, which has write access, then it is not picked
+  (`docs/specs/2026-10-21-scrum-board.md`, "Who moves what").
 - [ ] Given a `ready` issue filed by someone who is not a collaborator, then it
   is not picked. The stakeholder triages every outside report and re-files
   the work as their own issue (stakeholder, 2026-10-21; see open question 2).
@@ -233,7 +235,8 @@ repository.
     decides against it (open question 2).
   - Only issues labelled `ready` are worked on. On GitHub, only people with
     triage access or higher can add labels (*inferred* from GitHub's
-    permissions model). The picker also checks who added the label.
+    permissions model). The agents' App can add labels too, so the picker
+    accepts `ready` only when the stakeholder's own account added it.
   - Each limit's enforcer is in the Hard limits table.
 - **Cost:**
   - Sonnet, per the charter.
