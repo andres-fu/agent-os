@@ -163,8 +163,13 @@ test('git gets the token for github.com over https, and nothing for any other ho
 // 383 characters, starting ghs_). The short letters-digits-underscore form is older.
 const REAL_SHAPE = `ghs_${'Ab1'.repeat(40)}.${'x_Y-9'.repeat(50)}`;
 
+// What session-env writes for one value: a plain assignment, which the
+// PowerShell tool parses, then `export`, without which Bash keeps it from gh
+// (issue #26).
+const envLines = (value) => `GH_TOKEN=${value}\nexport GH_TOKEN\n`;
+
 test('a real-shaped token is accepted everywhere it is used', async () => {
-  assert.equal(sessionEnvLine(REAL_SHAPE), `GH_TOKEN=${REAL_SHAPE}\n`);
+  assert.equal(sessionEnvLine(REAL_SHAPE), envLines(REAL_SHAPE));
   assert.equal(isFresh({ token: REAL_SHAPE, expires_at: '2099-01-01T00:00:00Z' }, NOW), true);
   const fetch = fakeFetch(201, { token: REAL_SHAPE, expires_at: '2027-01-15T09:00:00Z' });
   const minted = await mintToken({ appId: '123', installationId: '456', privateKey, fetch, now: NOW });
@@ -173,17 +178,36 @@ test('a real-shaped token is accepted everywhere it is used', async () => {
 
 test('a token with characters that could break the env file or git input is refused', () => {
   for (const bad of ['ghs_a\nb', 'ghs_a b', 'ghs_a/b', 'ghs_a\\b', 'ghs_$x', 'ghs_"x', "ghs_'x", 'ghs_a=b']) {
-    assert.equal(sessionEnvLine(bad), 'GH_TOKEN=unavailable\n', JSON.stringify(bad));
+    assert.equal(sessionEnvLine(bad), envLines('unavailable'), JSON.stringify(bad));
   }
 });
 
 test('the session line sets GH_TOKEN, and fails closed when there is no token', () => {
-  assert.equal(sessionEnvLine('ghs_abc'), 'GH_TOKEN=ghs_abc\n');
+  assert.equal(sessionEnvLine('ghs_abc'), envLines('ghs_abc'));
   // A missing or odd token must never leave GH_TOKEN unset: gh would fall back
   // to the stakeholder's own stored login.
-  assert.equal(sessionEnvLine(null), 'GH_TOKEN=unavailable\n');
-  assert.equal(sessionEnvLine(''), 'GH_TOKEN=unavailable\n');
-  assert.equal(sessionEnvLine('ghs_a b'), 'GH_TOKEN=unavailable\n');
+  assert.equal(sessionEnvLine(null), envLines('unavailable'));
+  assert.equal(sessionEnvLine(''), envLines('unavailable'));
+  assert.equal(sessionEnvLine('ghs_a b'), envLines('unavailable'));
+});
+
+// What Claude Code's Bash tool does with CLAUDE_ENV_FILE: it runs it as shell
+// code before each command. Only an exported variable reaches gh, a child
+// process. Needs a POSIX sh (Git Bash on Windows, any Linux CI runner).
+const hasSh = spawnSync('sh', ['-c', 'exit 0']).status === 0;
+function childSees(fileText) {
+  const file = join(home, `sourced-${Math.random().toString(36).slice(2)}`);
+  writeFileSync(file, fileText);
+  const result = spawnSync('sh', ['-c', '. "$1"; printenv GH_TOKEN', 'sh', file], { encoding: 'utf8' });
+  return result.stdout.trim();
+}
+
+test('a child process of the shell sees the token, not just the shell', { skip: !hasSh && 'no POSIX sh on PATH' }, () => {
+  assert.equal(childSees(sessionEnvLine(null) + sessionEnvLine(REAL_SHAPE)), REAL_SHAPE);
+});
+
+test('a child process sees "unavailable" when no token could be minted', { skip: !hasSh && 'no POSIX sh on PATH' }, () => {
+  assert.equal(childSees(sessionEnvLine(null)), 'unavailable');
 });
 
 // End to end: the script as git and the SessionStart hook run it. A fresh
@@ -224,14 +248,14 @@ test('session-env writes "unavailable" first, then the token, so a crash or time
   const envFile = join(home, 'env-file');
   writeFileSync(envFile, 'EXISTING=1\n');
   assert.equal(run(['session-env'], { agentHome: cached, envFile }).status, 0);
-  assert.equal(readFileSync(envFile, 'utf8'), 'EXISTING=1\nGH_TOKEN=unavailable\nGH_TOKEN=ghs_cached\n');
+  assert.equal(readFileSync(envFile, 'utf8'), `EXISTING=1\n${envLines('unavailable')}${envLines('ghs_cached')}`);
 });
 
 test('session-env leaves only "unavailable" when it cannot mint', () => {
   const envFile = join(home, 'env-file-empty');
   writeFileSync(envFile, '');
   assert.equal(run(['session-env'], { agentHome: empty, envFile }).status, 0);
-  assert.equal(readFileSync(envFile, 'utf8'), 'GH_TOKEN=unavailable\n');
+  assert.equal(readFileSync(envFile, 'utf8'), envLines('unavailable'));
 });
 
 test('session-env exits 0 and says so when the env file cannot be written', () => {
