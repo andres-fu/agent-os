@@ -90,7 +90,7 @@ Per lesson L-0010, a limit with no enforcer is called an instruction.
 
 | Limit | Enforced by |
 | --- | --- |
-| It runs under a credential that cannot change settings, the ruleset, workflows or other repositories | **GitHub:** a fine-grained token limited to this one repository, with contents, pull requests and issues set to write, no workflow or administration permission, and an expiry date. Not the stakeholder's own login. |
+| It runs under a credential that cannot change settings, the ruleset, workflows or other repositories | **GitHub:** a GitHub App installation token that expires after an hour. The App is installed on this repository only, with contents, pull requests and issues set to write and no workflow or administration permission. Commits keep the stakeholder as author. Not the stakeholder's own login, which is kept out of the session (decision request, option D). |
 | Nothing it writes reaches `main` without the stakeholder | **GitHub:** the ruleset on `main` requires a PR and the `principal-engineer` check. **The workflow:** `principal-review` skips draft PRs, and every night-shift PR is a draft. |
 | It never merges, approves, closes or reopens a PR | **GitHub**, for merging: the required check above. The rest is an instruction. |
 | It never marks a PR ready for review: only the stakeholder takes a night PR out of draft | An instruction. The token's pull-requests write permission allows it, so the morning brief lists any `night/` PR that left draft without the stakeholder (by the ready-for-review event's actor). |
@@ -177,8 +177,10 @@ repository.
 
 **Limits**
 - [ ] Given the night shift's scheduled task, then the GitHub credential it uses
-  is a fine-grained token for this one repository, with no administration or
-  workflow permission. Calling the ruleset or repository-settings API with it
+  is the App's installation token for this one repository, with no
+  administration or workflow permission, and the session holds none of the
+  stakeholder's own GitHub or git credentials. Calling the ruleset or
+  repository-settings API with it
   is refused by GitHub.
 - [ ] Given the fix would change any forbidden path listed under Hard limits,
   or the dependency manifest or lockfile, then the diff check fails, nothing is
