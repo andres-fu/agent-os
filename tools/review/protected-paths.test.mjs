@@ -88,3 +88,8 @@ test('the onboarding intake is protected; the backlog and team diagram are not',
   assert.equal(findProtected(['docs/project/team.md']).protected, false);
   assert.equal(findProtected(['docs/project/intake.md.bak']).protected, false);
 });
+
+test('the test-first guard settings are protected; a nested copy is not', () => {
+  assert.equal(findProtected(['dope-tdd.json']).protected, true);
+  assert.equal(findProtected(['apps/web/dope-tdd.json']).protected, false);
+});
