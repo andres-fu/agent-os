@@ -87,7 +87,12 @@ tools have tests (`npm test`).
 [Dope TDD](https://github.com/andres-fu/dope-tdd) guards this repository:
 its settings are in [dope-tdd.json](dope-tdd.json) (tests sit beside their
 sources in `tools/`), so a session with the plugin installed refuses a source
-edit until its test was written or seen failing. Next: `/onboard` (spec in `docs/specs/`), then a
+edit until its test was written or seen failing.
+[tools/guard/branch-guard.mjs](tools/guard/branch-guard.mjs) is a
+`PreToolUse` hook that refuses an agent's commit, merge, cherry-pick, revert,
+rebase, am or push on `main`, and a push to `main` from another branch. It
+acts only once the stakeholder wires it in `.claude/settings.json`; the
+ruleset on `main` is what an agent cannot get past. Next: `/onboard` (spec in `docs/specs/`), then a
 real project. **On hold** until a real project needs them: Codex support, an
 `/audit` of the team, the 3D knowledge view, a weekly brief, autonomy levels,
 and a bot account for agents. Candidate tools are in
