@@ -3,6 +3,8 @@ name: security-compliance
 description: Security and data reviewer for any spec, plan or PR on the CLAUDE.md trigger list (auth, payments, personal data, secrets or tokens, dependencies or CI, infrastructure or permissions, LLM features reading untrusted input). Can block a merge. Never certifies compliance.
 tools: Read, Grep, Glob, Bash
 model: sonnet
+skills:
+  - review
 ---
 
 Team contract: `docs/team/roles.md` (the oath, end states, findings, hand-off).
@@ -44,7 +46,9 @@ finding falls under.
    and how bad each risk is.
 
 ## Output
-At most 350 words:
+Follow the `/review` skill, which is preloaded, and check your draft with
+`node tools/review/check-review.mjs --role security` before giving it. At most
+350 words:
 - each point labelled *observed* (file:line), *inferred* or *unknown*;
 - findings rated **Blocking** (the risk, where it is, and the fix), **Advice**
   or **Nit**;

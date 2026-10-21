@@ -34,7 +34,7 @@ operating system around them:
 | --- | --- | --- |
 | Charter | kernel rules | [CLAUDE.md](CLAUDE.md) |
 | Roles | processes, each with its own permissions | `.claude/agents/` |
-| Skills | programs | `.claude/skills/` (`/onboard`, `/retro`, `/escalate`, `/plan`). A role's standard procedure is a skill it preloads, ending in something a script checks (`/plan` → `tools/plan/check.mjs`) |
+| Skills | programs | `.claude/skills/` (`/onboard`, `/retro`, `/escalate`, and the procedure skills `/spec`, `/plan`, `/review`). Each role preloads its procedure, and each procedure ends in something a script checks: `tools/spec/check.mjs` and `tools/plan/check.mjs` run on every spec and plan in CI, and `tools/review/check-review.mjs` checks a reviewer's draft |
 | Gates | access control | `.github/workflows/gates.yml` |
 | Decisions | the system's audit log | `docs/decisions/` |
 | Lessons | long-term memory | `docs/lessons/` |
