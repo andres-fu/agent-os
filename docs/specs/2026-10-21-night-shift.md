@@ -145,8 +145,8 @@ repository.
 - [ ] Given a `ready` issue whose `ready` label was added by someone without
   write access (by the label event's actor), then it is not picked.
 - [ ] Given a `ready` issue filed by someone who is not a collaborator, then it
-  is not picked (*assumption*: collaborators re-file outside reports as their
-  own issues; see open question 2).
+  is not picked. The stakeholder triages every outside report and re-files
+  the work as their own issue (stakeholder, 2026-10-21; see open question 2).
 - [ ] Given a picked issue with comments from a collaborator and from a
   non-collaborator, then only the collaborator's comments reach the agent.
 - [ ] Given a picked issue whose body was edited after the `ready` label was
@@ -288,9 +288,13 @@ repository.
    - reading only collaborators' text;
    - refusing an issue edited after it was labelled.
 
-   The open questions are:
-   - whether that is enough for a named exception to the charter;
-   - whether outside reports must be re-filed by a collaborator.
+   **Answered by the stakeholder (2026-10-21):** "I should handle all issues
+   from people outside us - I can be that final gate." Outside issues never
+   reach the night shift directly. The stakeholder reads them, and turns
+   accepted work into an issue they file and label `ready` themselves.
+
+   Still open: whether these limits are enough for a named exception to the
+   charter.
 
    The merge-authority decision also says to revisit it all if the repository
    goes public, and it now is. Escalated:
