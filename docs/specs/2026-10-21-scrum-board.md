@@ -1,6 +1,7 @@
 ---
 title: Project visibility and the backlog - goals, milestones, a roadmap and labels, run by the team
-status: draft        # draft | approved | done. Only the stakeholder sets approved.
+status: approved     # draft | approved | done. Only the stakeholder sets approved.
+approved_by: Andres Fuentes (stakeholder), 2026-10-21, asked in the session which draft specs to approve: "Visibility (#33)"
 owner: product-manager
 date: 2026-10-21
 ---
