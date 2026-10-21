@@ -23,9 +23,11 @@ import { fileURLToPath } from 'node:url';
 
 const API = 'https://api.github.com';
 const REFRESH_MARGIN_SECONDS = 300;
-// GitHub tokens are letters, digits and underscores (ghs_...). Anything else
-// is refused rather than written into an env file the shell reads.
-const TOKEN_RE = /^[A-Za-z0-9_]+$/;
+// Installation tokens start ghs_ and can be long and contain `.` and `-`
+// (seen 2026-10-21: 383 characters; issue #24). Anything outside letters,
+// digits, `_`, `.` and `-` is refused rather than written into an env file
+// the shell reads or into git's credential input.
+const TOKEN_RE = /^[A-Za-z0-9_.-]+$/;
 const ID_RE = /^[0-9]+$/;
 const TOKEN_PERMISSIONS = { contents: 'write', issues: 'write', pull_requests: 'write' };
 
