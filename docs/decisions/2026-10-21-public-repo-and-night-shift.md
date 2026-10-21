@@ -87,3 +87,15 @@ visibility, given the fork check above.
 
 ## Decision
 Filled in by the stakeholder: the choice, and anything to watch.
+
+**Decided so far, in the session on 2026-10-21** (recorded by the agent, with
+the stakeholder's words; merging this record is the stakeholder's
+confirmation):
+- **Credential: option D, a GitHub App.** "yes please - why not just go for
+  C?" (the App), then "let's work on setting up the app". The stakeholder stays
+  commit author. Built in `tools/github-app/`.
+- **Outside issues:** "I should handle all issues from people outside us - I
+  can be that final gate."
+
+**Still open:** the named charter exception for the night shift, and
+`status`, which stays `awaiting-decision` until the stakeholder sets it.

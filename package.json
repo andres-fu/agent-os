@@ -8,7 +8,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "node --test tools/lessons/lessons.test.mjs tools/review/protected-paths.test.mjs tools/review/check-summary.test.mjs tools/review/codeowners.test.mjs tools/guard/branch-guard.test.mjs tools/onboard/identifiers.test.mjs tools/onboard/intake.test.mjs tools/onboard/template.test.mjs tools/onboard/data-gate.test.mjs tools/onboard/git-main.test.mjs tools/onboard/ci.test.mjs tools/onboard/check.test.mjs tools/onboard/record.test.mjs tools/onboard/skill.test.mjs tools/onboard/backlog.test.mjs tools/onboard/team.test.mjs tools/onboard/claude-section.test.mjs tools/onboard/generate.test.mjs tools/onboard/no-network.test.mjs",
+    "test": "node --test tools/lessons/lessons.test.mjs tools/review/protected-paths.test.mjs tools/review/check-summary.test.mjs tools/review/codeowners.test.mjs tools/guard/branch-guard.test.mjs tools/github-app/token.test.mjs tools/onboard/identifiers.test.mjs tools/onboard/intake.test.mjs tools/onboard/template.test.mjs tools/onboard/data-gate.test.mjs tools/onboard/git-main.test.mjs tools/onboard/ci.test.mjs tools/onboard/check.test.mjs tools/onboard/record.test.mjs tools/onboard/skill.test.mjs tools/onboard/backlog.test.mjs tools/onboard/team.test.mjs tools/onboard/claude-section.test.mjs tools/onboard/generate.test.mjs tools/onboard/no-network.test.mjs",
     "lessons:check": "node tools/lessons/lessons.mjs check",
     "lessons:index": "node tools/lessons/lessons.mjs index"
   },
