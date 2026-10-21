@@ -37,15 +37,19 @@ decided_on:
 | --- | --- | --- | --- |
 | A. No night shift on public repos | None | None new; the backlog waits for the stakeholder | Yes |
 | B. Night shift with limits: it reads only the issue body and comments from the author and collaborators (by author association); it takes only issues filed by a collaborator; its PRs never auto-merge in version 1; and the charter gains a named, narrow exception for it | A few rules in the spec and a check in the issue picker | Injection through text a collaborator wrote or quoted, or an edit to the body after labelling; mitigated by never auto-merging, and by every PR waiting for the stakeholder | Yes |
-| C. As B, plus the night shift runs under a fine-grained token limited to this repository (contents and pull requests: write; issues: write), not the admin login | Setting up and rotating the token; scheduled tasks must use it | Lowest: a hijacked night cannot change settings, the ruleset or other repositories | Yes |
+| C. As B, plus the night shift runs under a fine-grained token, not the admin login. The token is limited to this repository: contents, pull requests and issues set to write, no workflow or administration permission, and an expiry date (for example 90 days) | Setting up the token and renewing it before it expires; scheduled tasks must use it | Lowest. A hijacked night cannot change settings, the ruleset, workflows or other repositories. It can still push a `night/` branch, open a draft PR, and comment on or label issues, so an injected night could spam issues or mislabel them | Yes |
 
 ## Recommendation
-**C, with B's limits from day one.** If the token setup is too much for now,
-run B and record the admin login as an accepted, named risk.
+**C from day one.** A security-compliance review of the draft spec blocked it
+while the admin login was the credential. That login can edit the ruleset, and
+nothing at GitHub stops an agent using it that way (merge-authority decision,
+"What enforces it today").
 
-Either way:
-- night-shift PRs wait for the stakeholder until `/retro` shows a clean record;
-- the charter's untrusted-content rule names this exception and its limits, so
+Also:
+- Every night-shift PR is a draft, which `principal-review` skips. So nothing
+  is reviewed or auto-merged until the stakeholder marks it ready. Revisit once
+  `/retro` shows a clean record.
+- The charter's untrusted-content rule names this exception and its limits, so
   the rule and the practice agree (lesson L-0010).
 
 Nothing else in the merge-authority decision needs to change for public
