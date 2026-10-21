@@ -111,7 +111,10 @@ caches them until five minutes before they expire:
   - Bash: `eval "$(node tools/github-app/token.mjs env)" && gh ...`
   - PowerShell: `node tools/github-app/token.mjs env powershell | Invoke-Expression; gh ...`
 
-  If no token can be minted, it sets `GH_TOKEN=unavailable` and exits 1.
-  `git push` never needs this, because the helper mints a fresh token each time.
+  If no token can be minted, it sets `GH_TOKEN=unavailable` and exits 1. `gh`
+  still runs and fails with 401, which is the safe outcome. **Never run `env`
+  bare, or `echo $GH_TOKEN`:** that would print the token into the session's
+  transcript. Only `eval` or `Invoke-Expression` consume it silently. `git push`
+  never needs this, because the helper mints a fresh token each time.
 - **Scheduled tasks:** the docs do not say whether they run project hooks.
   The night shift checks its identity before it works.

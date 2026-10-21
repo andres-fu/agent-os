@@ -88,8 +88,9 @@ Hand-off
 - **GitHub identity:** agents act as the agents' GitHub App
   (`tools/github-app/README.md`). If `gh` answers `401 Bad credentials`, the
   hour-long token has expired. Refresh it in the same command:
-  `eval "$(node tools/github-app/token.mjs env)" && gh ...`. Never fall back to
-  another login.
+  `eval "$(node tools/github-app/token.mjs env)" && gh ...`. If the refresh
+  fails, `gh` still fails with 401. Never fall back to another login. Never run
+  `env` bare or echo `GH_TOKEN`: either prints the token into the transcript.
 
 ## Inspirations
 These were studied, not copied; the wording here is ours.
