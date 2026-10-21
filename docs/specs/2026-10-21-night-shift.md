@@ -95,7 +95,7 @@ Per lesson L-0010, a limit with no enforcer is called an instruction.
 | It never merges, approves, closes or reopens a PR | **GitHub**, for merging: the required check above. The rest is an instruction. |
 | It never force-pushes, deletes a branch or rewrites history | **GitHub**, on `main`: the ruleset blocks force pushes and deletion. On other branches: an instruction. |
 | No commits on local `main` | **The branch guard hook** (`tools/guard/branch-guard.mjs`), best-effort |
-| It never changes the files that govern it or the team (listed below), and adds no dependencies | **A deterministic diff check** before every push, which reuses `tools/review/protected-paths.mjs`. At merge time, the protected-paths rule and the stakeholder's merge. |
+| It never changes the files that govern it or the team (listed below), and adds no dependencies | **A deterministic diff check** before every push, which reuses `tools/review/protected-paths.mjs`. It runs in the agent's own session, so it is best-effort. The backstops are the protected-paths rule and the stakeholder's merge at merge time, and the token's lack of workflow permission. |
 | At most one pull request per night | **The issue picker**, a script: it exits with nothing to do if a `night/` PR was opened today |
 | Test-first | **dope-tdd** in enforce mode; step 5 stops the night if it is not guarding |
 | Issue text is data, not instructions | **The issue picker:** it passes on only the issue body and comments written by collaborators (by author association). Everything after that is an instruction. |
@@ -150,7 +150,8 @@ repository.
   non-collaborator, then only the collaborator's comments reach the agent.
 - [ ] Given a picked issue whose body was edited after the `ready` label was
   added, then it is not worked on. It is blocked with "edited after it was
-  marked ready".
+  marked ready". The edit is found by comparing the body's last edit time, in
+  the issue's edit history, with the time of the label event.
 
 **Main red**
 - [ ] Given the latest main CI run failed, then exactly one push notification is
