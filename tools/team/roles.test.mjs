@@ -75,6 +75,22 @@ test('reviewers never write files and never read the web', () => {
   }
 });
 
+// Standard procedures live in skills, preloaded through the `skills:` list in a
+// role's frontmatter (Claude Code injects the skill's full content at start).
+function preloads(name) {
+  const text = readFileSync(join(AGENTS, `${name}.md`), 'utf8').replace(/\r\n/g, '\n');
+  const list = text.match(/^skills:\n((?:\s+- .+\n)+)/m);
+  return list ? list[1].split('\n').map((line) => line.replace(/^\s+- /, '').trim()).filter(Boolean) : [];
+}
+
+test('the engineering manager preloads its /plan procedure, and the skill exists', () => {
+  assert.deepEqual(preloads('engineering-manager'), ['plan']);
+  const skill = readFileSync(fileURLToPath(new URL('../../.claude/skills/plan/SKILL.md', import.meta.url)), 'utf8');
+  assert.match(skill, /^name: plan$/m);
+  assert.match(skill, /node tools\/plan\/check\.mjs/);
+  assert.doesNotMatch(skill, /^disable-model-invocation: true$/m, 'a skill with disable-model-invocation cannot be preloaded');
+});
+
 test('no role can start other agents', () => {
   for (const name of ROLES) {
     assert.ok(!load(name).tools.includes('Agent'), `${name}: must not have Agent`);
