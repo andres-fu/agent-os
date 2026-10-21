@@ -45,12 +45,35 @@ decided_on:
 | A. No night shift on public repos | None | None new; the backlog waits for the stakeholder | Yes |
 | B. Night shift with limits: it reads only the issue body and comments from the author and collaborators (by author association); it takes only issues filed by a collaborator; its PRs never auto-merge in version 1; and the charter gains a named, narrow exception for it | A few rules in the spec and a check in the issue picker | Injection through text a collaborator wrote or quoted, or an edit to the body after labelling; mitigated by never auto-merging, and by every PR waiting for the stakeholder | Yes |
 | C. As B, plus the night shift runs under a fine-grained token, not the admin login. The token is limited to this repository: contents, pull requests and issues set to write, no workflow or administration permission, and an expiry date (for example 90 days) | Setting up the token and renewing it before it expires; scheduled tasks must use it | Lowest. A hijacked night cannot change settings, the ruleset, workflows or other repositories. It can still push a `night/` branch, open a draft PR, and comment on or label issues, so an injected night could spam issues or mislabel them | Yes |
+| D. As B, with a GitHub App (`agent-os[bot]`) as the agents' identity. The App is installed on this repository only, with contents, pull requests and issues set to write and no workflow or administration permission. Agents get installation tokens that expire after an hour. Commits keep the stakeholder as author, with `Co-Authored-By: Claude`, so credit and ownership stay with the stakeholder; the App only pushes and opens PRs. The stakeholder's own GitHub and git credentials are kept out of agent sessions | About 45 minutes: create the App and store its private key where agent sessions cannot read it, plus a small script that mints a token. Agent sessions and the scheduled task use only that token | Lowest. GitHub can tell agents from the stakeholder, so the stakeholder can approve, CODEOWNERS can be turned on, and the stakeholder can have a one-click bypass for escalated merges. A hijacked session is capped at the App's permissions for an hour | Yes: uninstall the App |
 
 ## Recommendation
-**C from day one.** A security-compliance review of the draft spec blocked it
-while the admin login was the credential. That login can edit the ruleset, and
-nothing at GitHub stops an agent using it that way (merge-authority decision,
-"What enforces it today").
+**D: a GitHub App, with the stakeholder kept as commit author.** The
+stakeholder chose this in the session on 2026-10-21 ("why not just go for C",
+meaning the App). They want credit and control of the code to stay theirs,
+and agents to be separate actors that GitHub can limit.
+
+Why it matters:
+- A security-compliance review of the draft spec blocked it while the admin
+  login was the credential. That login can edit the ruleset, and nothing at
+  GitHub stops an agent using it that way (merge-authority decision, "What
+  enforces it today").
+- *Inferred:* a token or App limits only what an agent is *given*. Agent
+  sessions run as the stakeholder's own operating-system user, so they could
+  still reach the stakeholder's stored `gh` login or git credentials. D works
+  only if those are kept out of agent sessions too, for example:
+  - agents get just the App token;
+  - the stakeholder's own login lives in a credential store that asks before
+    use;
+  - or the scheduled task runs as a separate operating-system user.
+
+  The plan for D must name which one.
+- With D in place, the merge-authority decision can move from instructions to
+  enforcement: the stakeholder can approve PRs, CODEOWNERS can be turned on,
+  and the stakeholder can bypass the ruleset for escalated merges. That is a
+  follow-up revision of that decision.
+
+If D slips, use C as a stopgap, never the admin login.
 
 Also:
 - Every night-shift PR is a draft, which `principal-review` skips. So nothing
