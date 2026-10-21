@@ -72,6 +72,25 @@ test('minting posts to the installation with the JWT and returns the token and e
   assert.equal(calls[0].init.method, 'POST');
   assert.match(calls[0].init.headers.Authorization, /^Bearer [\w-]+\.[\w-]+\.[\w-]+$/);
   assert.equal(calls[0].init.headers.Accept, 'application/vnd.github+json');
+  // The token asks for only these, so it stays capped even if the App is
+  // later granted more.
+  assert.deepEqual(JSON.parse(calls[0].init.body), {
+    permissions: { contents: 'write', issues: 'write', pull_requests: 'write' },
+  });
+});
+
+test('a mint response that is not JSON is an error that quotes none of it', async () => {
+  const fetch = async () => ({
+    status: 201,
+    json: async () => {
+      throw new SyntaxError('Unexpected token < in JSON: <html>secret-page</html>');
+    },
+  });
+  await assert.rejects(mintToken({ appId: '123', installationId: '456', privateKey, fetch, now: NOW }), (error) => {
+    assert.match(error.message, /not JSON/);
+    assert.doesNotMatch(error.message, /secret-page/);
+    return true;
+  });
 });
 
 test('a refused mint is an error naming the status, never echoing the response or key', async () => {
@@ -183,12 +202,24 @@ test('credential get gives git nothing when there is no App config', () => {
   assert.match(result.stderr, /github-app\.json/);
 });
 
-test('session-env appends GH_TOKEN to the env file, or "unavailable" when it cannot mint', () => {
+test('session-env writes "unavailable" first, then the token, so a crash or timeout in between still fails closed', () => {
   const envFile = join(home, 'env-file');
   writeFileSync(envFile, 'EXISTING=1\n');
   assert.equal(run(['session-env'], { agentHome: cached, envFile }).status, 0);
+  assert.equal(readFileSync(envFile, 'utf8'), 'EXISTING=1\nGH_TOKEN=unavailable\nGH_TOKEN=ghs_cached\n');
+});
+
+test('session-env leaves only "unavailable" when it cannot mint', () => {
+  const envFile = join(home, 'env-file-empty');
+  writeFileSync(envFile, '');
   assert.equal(run(['session-env'], { agentHome: empty, envFile }).status, 0);
-  assert.equal(readFileSync(envFile, 'utf8'), 'EXISTING=1\nGH_TOKEN=ghs_cached\nGH_TOKEN=unavailable\n');
+  assert.equal(readFileSync(envFile, 'utf8'), 'GH_TOKEN=unavailable\n');
+});
+
+test('session-env exits 0 and says so when the env file cannot be written', () => {
+  const result = run(['session-env'], { agentHome: cached, envFile: join(home, 'no-such-dir', 'env') });
+  assert.equal(result.status, 0);
+  assert.match(result.stderr, /could not write/);
 });
 
 test('an unknown command is a usage error', () => {

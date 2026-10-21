@@ -27,6 +27,7 @@ const REFRESH_MARGIN_SECONDS = 300;
 // is refused rather than written into an env file the shell reads.
 const TOKEN_RE = /^[A-Za-z0-9_]+$/;
 const ID_RE = /^[0-9]+$/;
+const TOKEN_PERMISSIONS = { contents: 'write', issues: 'write', pull_requests: 'write' };
 
 function base64url(value) {
   return Buffer.from(value).toString('base64url');
@@ -59,11 +60,20 @@ export async function mintToken({ appId, installationId, privateKey, fetch, now 
       Accept: 'application/vnd.github+json',
       'X-GitHub-Api-Version': '2022-11-28',
     },
+    // Ask for only what agents need, so the token stays capped even if the
+    // App is later granted more.
+    body: JSON.stringify({ permissions: TOKEN_PERMISSIONS }),
   });
   if (response.status !== 201) {
     throw new Error(`GitHub refused the installation token request (status ${response.status})`);
   }
-  const body = await response.json();
+  let body;
+  try {
+    body = await response.json();
+  } catch {
+    // A parse error can quote the body; say only that it was not JSON.
+    throw new Error('GitHub answered with a body that is not JSON');
+  }
   if (typeof body.token !== 'string' || !TOKEN_RE.test(body.token)) {
     throw new Error('GitHub answered with no token');
   }
@@ -130,14 +140,23 @@ async function main(args) {
   const [command, action] = args;
 
   if (command === 'session-env') {
-    let token = null;
-    try {
-      token = await getToken({ home, fetch: globalThis.fetch, now });
-    } catch (error) {
-      process.stderr.write(`github-app: ${error.message}; GH_TOKEN set to "unavailable"\n`);
-    }
     const envFile = process.env.CLAUDE_ENV_FILE;
-    if (envFile) appendFileSync(envFile, sessionEnvLine(token));
+    if (!envFile) return 0;
+    try {
+      // "unavailable" goes in before any network call, so a crash or the
+      // hook's timeout still leaves gh failing rather than falling back to
+      // the stakeholder's own login. The token line after it wins.
+      appendFileSync(envFile, sessionEnvLine(null));
+    } catch {
+      process.stderr.write('github-app: could not write CLAUDE_ENV_FILE; gh may use another login\n');
+      return 0;
+    }
+    try {
+      const token = await getToken({ home, fetch: globalThis.fetch, now });
+      appendFileSync(envFile, sessionEnvLine(token));
+    } catch (error) {
+      process.stderr.write(`github-app: ${error.message}; GH_TOKEN left "unavailable"\n`);
+    }
     return 0;
   }
 
