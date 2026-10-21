@@ -95,7 +95,9 @@ to `main` from another branch. A command spelled another way (inside
 `bash -c`, an alias) gets past it, and it lets the command through when it
 cannot read the input or the folder is not a git checkout. It acts only once
 the stakeholder wires it in `.claude/settings.json`; the ruleset on `main` is
-the enforcer. Next: `/onboard` (spec in `docs/specs/`), then a
+the enforcer. Agents act on GitHub as a GitHub App, not as the stakeholder,
+through [tools/github-app/](tools/github-app/README.md). The stakeholder stays
+the commit author. Next: `/onboard` (spec in `docs/specs/`), then a
 real project. **On hold** until a real project needs them: Codex support, an
 `/audit` of the team, the 3D knowledge view, a weekly brief, autonomy levels,
 and a bot account for agents. Candidate tools are in
