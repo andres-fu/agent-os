@@ -163,10 +163,13 @@ test('git gets the token for github.com over https, and nothing for any other ho
 // 383 characters, starting ghs_). The short letters-digits-underscore form is older.
 const REAL_SHAPE = `ghs_${'Ab1'.repeat(40)}.${'x_Y-9'.repeat(50)}`;
 
-// What session-env writes for one value: a plain assignment, which the
-// PowerShell tool parses, then `export`, without which Bash keeps it from gh
+// What session-env writes for one value: a plain assignment and nothing else.
+// Observed 2026-10-21 (headless Claude Code 2.1.306): one `export` line makes
+// the PowerShell tool ignore the whole file. Bash still passes the value to gh
+// because .claude/settings.json's env sets GH_TOKEN=unavailable for every
+// session, so GH_TOKEN is already exported and the assignment updates it
 // (issue #26).
-const envLines = (value) => `GH_TOKEN=${value}\nexport GH_TOKEN\n`;
+const envLines = (value) => `GH_TOKEN=${value}\n`;
 
 test('a real-shaped token is accepted everywhere it is used', async () => {
   assert.equal(sessionEnvLine(REAL_SHAPE), envLines(REAL_SHAPE));
@@ -191,23 +194,40 @@ test('the session line sets GH_TOKEN, and fails closed when there is no token', 
   assert.equal(sessionEnvLine('ghs_a b'), envLines('unavailable'));
 });
 
-// What Claude Code's Bash tool does with CLAUDE_ENV_FILE: it runs it as shell
-// code before each command. Only an exported variable reaches gh, a child
-// process. Needs a POSIX sh (Git Bash on Windows, any Linux CI runner).
-const hasSh = spawnSync('sh', ['-c', 'exit 0']).status === 0;
-function childSees(fileText) {
-  const file = join(home, `sourced-${Math.random().toString(36).slice(2)}`);
-  writeFileSync(file, fileText);
-  const result = spawnSync('sh', ['-c', '. "$1"; printenv GH_TOKEN', 'sh', file], { encoding: 'utf8' });
-  return result.stdout.trim();
-}
-
-test('a child process of the shell sees the token, not just the shell', { skip: !hasSh && 'no POSIX sh on PATH' }, () => {
-  assert.equal(childSees(sessionEnvLine(null) + sessionEnvLine(REAL_SHAPE)), REAL_SHAPE);
+test('the session file holds only plain NAME=value lines, which the PowerShell tool accepts', () => {
+  for (const text of [sessionEnvLine(REAL_SHAPE), sessionEnvLine(null), sessionEnvLine('ghs_a b')]) {
+    for (const line of text.split('\n').filter(Boolean)) {
+      assert.match(line, /^[A-Z_][A-Z0-9_]*=[A-Za-z0-9_.-]+$/, line);
+    }
+  }
 });
 
-test('a child process sees "unavailable" when no token could be minted', { skip: !hasSh && 'no POSIX sh on PATH' }, () => {
-  assert.equal(childSees(sessionEnvLine(null)), 'unavailable');
+// What Claude Code's Bash tool does with CLAUDE_ENV_FILE: it runs it as shell
+// code before each command, in a shell that inherits the session's env. Only
+// an exported variable reaches gh, a child process. Needs a POSIX sh (Git Bash
+// on Windows, any Linux CI runner).
+const hasSh = spawnSync('sh', ['-c', 'exit 0']).status === 0;
+function childSees(fileText, baseline) {
+  const file = join(home, `sourced-${Math.random().toString(36).slice(2)}`);
+  writeFileSync(file, fileText);
+  const env = { ...process.env };
+  delete env.GH_TOKEN;
+  if (baseline !== undefined) env.GH_TOKEN = baseline;
+  const result = spawnSync('sh', ['-c', '. "$1"; printenv GH_TOKEN', 'sh', file], { env, encoding: 'utf8' });
+  return result.stdout.trim();
+}
+const shell = { skip: !hasSh && 'no POSIX sh on PATH' };
+
+test('with the settings baseline, a child process of the shell sees the token', shell, () => {
+  assert.equal(childSees(sessionEnvLine(null) + sessionEnvLine(REAL_SHAPE), 'unavailable'), REAL_SHAPE);
+});
+
+test('with the settings baseline, a child process sees "unavailable" when no token could be minted', shell, () => {
+  assert.equal(childSees(sessionEnvLine(null), 'unavailable'), 'unavailable');
+});
+
+test('without the baseline, the plain line never reaches a child: why settings must set it (issue #26)', shell, () => {
+  assert.equal(childSees(sessionEnvLine(REAL_SHAPE)), '');
 });
 
 // End to end: the script as git and the SessionStart hook run it. A fresh

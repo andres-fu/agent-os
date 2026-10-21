@@ -10,12 +10,17 @@ Decision: [option D](../../docs/decisions/2026-10-21-public-repo-and-night-shift
 caches them until five minutes before they expire:
 
 - `node tools/github-app/token.mjs session-env`: a `SessionStart` hook. It
-  writes `GH_TOKEN=<token>` and `export GH_TOKEN` to `CLAUDE_ENV_FILE`, so the
-  session's `gh` commands use the App. The PowerShell tool parses the
-  assignment. The Bash tool runs the file as shell code, where only an
-  exported variable reaches `gh` (issue #26). If it cannot mint a token, it writes
+  writes a plain `GH_TOKEN=<token>` line to `CLAUDE_ENV_FILE`, so the session's
+  `gh` commands use the App. If it cannot mint a token, it writes
   `GH_TOKEN=unavailable`, so `gh` fails instead of falling back to the
   stakeholder's own login.
+- `.claude/settings.json` sets `"env": { "GH_TOKEN": "unavailable" }` for
+  every session. That's the fail-closed baseline if the hook never runs. It
+  also makes the hook work in Bash: Bash runs the env file as shell code, where
+  a bare assignment reaches `gh` only if `GH_TOKEN` is already exported. The
+  file can't simply say `export`, because one non-plain line makes the
+  PowerShell tool ignore the whole file. Both were observed on 2026-10-21 with
+  headless Claude Code 2.1.306 (issue #26).
 - `node tools/github-app/token.mjs credential get`: a git credential helper.
   It gives each `git push` to `https://github.com` a fresh token. If it cannot
   mint one, it gives nothing, and the push fails.
@@ -52,8 +57,9 @@ caches them until five minutes before they expire:
    holds no local path. This was checked with Git for Windows and a fake
    cached token. Pushes from this checkout then go as the App, your own
    included. Commit authorship is unchanged.
-6. **Add the `SessionStart` hook** to `.claude/settings.json` (shown in the
-   PR that added this folder).
+6. **In `.claude/settings.json`**, add the `SessionStart` hook, and
+   `"env": { "GH_TOKEN": "unavailable" }`. `tools/github-app/settings.test.mjs`
+   checks both.
 7. **Check it:** in a new session, ask Claude to run `gh auth status` with
    **both** the Bash and the PowerShell tool. Each should show
    `agent-os-team[bot] (GH_TOKEN)` as the active account. A push from a branch
@@ -82,9 +88,10 @@ caches them until five minutes before they expire:
   what its key and tokens can do. A separate operating-system user for the
   night shift would remove the rest.
 - **The hook can fail outright.** If `node` is missing or the hook never runs,
-  `GH_TOKEN` is not set, and `gh` uses the stakeholder's login. The hook
-  writes `GH_TOKEN=unavailable` before anything else, so a crash or timeout
-  part-way still fails closed. `gh auth status` (setup step 7) is the check.
+  `GH_TOKEN` keeps the settings baseline, `unavailable`, so `gh` fails closed.
+  The hook also writes `GH_TOKEN=unavailable` before anything else, so a crash
+  or timeout part-way does the same. An agent could still unset `GH_TOKEN` on
+  purpose (see "Same operating-system user").
 - **Other remotes bypass the helper.** An SSH remote, or another clone of the
   repository, uses whatever credentials it has.
 - **PowerShell needs Claude Code 2.1.296 or later** to receive variables from
