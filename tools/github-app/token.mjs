@@ -131,14 +131,16 @@ export function credentialResponse(input, token) {
 }
 
 /**
- * The lines a SessionStart hook writes to CLAUDE_ENV_FILE. The PowerShell tool
- * parses the plain assignment. The Bash tool runs the file as shell code, where
- * an assignment alone is not exported, so gh (a child process) would never see
- * it and would use the stakeholder's own login instead (issue #26).
+ * The line a SessionStart hook writes to CLAUDE_ENV_FILE: a plain assignment
+ * only. Observed 2026-10-21: the PowerShell tool ignores the whole file if any
+ * line is not plain NAME=value, so there is no `export` line. The Bash tool
+ * runs the file as shell code, where an assignment alone is not exported; gh
+ * still sees it because .claude/settings.json's env sets GH_TOKEN=unavailable
+ * for every session, so the variable is already exported (issue #26).
  */
 export function sessionEnvLine(token) {
   const value = typeof token === 'string' && TOKEN_RE.test(token) ? token : 'unavailable';
-  return `GH_TOKEN=${value}\nexport GH_TOKEN\n`;
+  return `GH_TOKEN=${value}\n`;
 }
 
 async function main(args) {

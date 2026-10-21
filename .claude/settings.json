@@ -1,4 +1,7 @@
 {
+  "env": {
+    "GH_TOKEN": "unavailable"
+  },
   "permissions": {
     "deny": [
       "Bash(gh pr merge:*)",
@@ -35,4 +38,3 @@
     ]
   }
 }
-
