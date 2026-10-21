@@ -278,14 +278,15 @@ repository.
 2. **Public issues and the charter.** Both repositories are public, so anyone
    can file an issue or comment. The charter says: "Agents that read untrusted
    content (web pages, issues, emails) do not get secrets or open network access
-   in the same session." The night shift reads issues and holds the
-   stakeholder's GitHub login, which has admin rights. As written, it breaks
-   that rule. Labels limit which issues are taken, not who can write in them:
+   in the same session." The night shift reads issues and holds a GitHub
+   credential, so it needs a named exception to that rule. The first draft used
+   the stakeholder's admin login; this one uses the App's token (Hard limits). Labels limit which issues are taken, not who can write in them:
    - an issue's author can edit its body after it is labelled `ready`;
    - anyone can comment on it.
 
    This draft builds in:
-   - a token limited to this repository;
+   - a GitHub App token limited to this repository, with the stakeholder's own
+     credentials kept out of the session (decision request, option D);
    - taking only issues filed, and labelled, by collaborators;
    - reading only collaborators' text;
    - refusing an issue edited after it was labelled.
