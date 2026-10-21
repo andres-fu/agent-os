@@ -284,6 +284,38 @@ test('session-env exits 0 and says so when the env file cannot be written', () =
   assert.match(result.stderr, /could not write/);
 });
 
+// Mid-session refresh (issue #39): the SessionStart token expires after an
+// hour, and shell state doesn't persist between tool calls, so an agent runs
+// `eval "$(node tools/github-app/token.mjs env)"` in the command that needs gh.
+test('env prints an export line with the cached token, for eval in Bash', () => {
+  const result = run(['env'], { agentHome: cached });
+  assert.equal(result.status, 0);
+  assert.equal(result.stdout, 'export GH_TOKEN=ghs_cached\n');
+});
+
+test('env powershell prints a PowerShell assignment', () => {
+  const result = run(['env', 'powershell'], { agentHome: cached });
+  assert.equal(result.status, 0);
+  assert.equal(result.stdout, "$env:GH_TOKEN = 'ghs_cached'\n");
+});
+
+test('env fails closed: "unavailable", never an unset GH_TOKEN, and exit 1', () => {
+  const bash = run(['env'], { agentHome: empty });
+  assert.equal(bash.status, 1);
+  assert.equal(bash.stdout, 'export GH_TOKEN=unavailable\n');
+  assert.match(bash.stderr, /github-app\.json/);
+  const ps = run(['env', 'powershell'], { agentHome: empty });
+  assert.equal(ps.status, 1);
+  assert.equal(ps.stdout, "$env:GH_TOKEN = 'unavailable'\n");
+});
+
+test('after eval in a real shell, a child process sees the fresh token', shell, () => {
+  const env = { ...process.env, AGENT_OS_HOME: cached, GH_TOKEN: 'expired' };
+  const command = `eval "$("${process.execPath.replace(/\\/g, '/')}" "${script.replace(/\\/g, '/')}" env)"; printenv GH_TOKEN`;
+  const result = spawnSync('sh', ['-c', command], { env, encoding: 'utf8' });
+  assert.equal(result.stdout.trim(), 'ghs_cached', result.stderr);
+});
+
 test('an unknown command is a usage error', () => {
   const result = run(['print'], { agentHome: cached });
   assert.equal(result.status, 2);
