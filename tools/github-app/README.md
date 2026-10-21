@@ -10,8 +10,10 @@ Decision: [option D](../../docs/decisions/2026-10-21-public-repo-and-night-shift
 caches them until five minutes before they expire:
 
 - `node tools/github-app/token.mjs session-env`: a `SessionStart` hook. It
-  writes `GH_TOKEN=<token>` to `CLAUDE_ENV_FILE`, so the session's `gh`
-  commands use the App. If it cannot mint a token, it writes
+  writes `GH_TOKEN=<token>` and `export GH_TOKEN` to `CLAUDE_ENV_FILE`, so the
+  session's `gh` commands use the App. The PowerShell tool parses the
+  assignment. The Bash tool runs the file as shell code, where only an
+  exported variable reaches `gh` (issue #26). If it cannot mint a token, it writes
   `GH_TOKEN=unavailable`, so `gh` fails instead of falling back to the
   stakeholder's own login.
 - `node tools/github-app/token.mjs credential get`: a git credential helper.
@@ -52,9 +54,10 @@ caches them until five minutes before they expire:
    included. Commit authorship is unchanged.
 6. **Add the `SessionStart` hook** to `.claude/settings.json` (shown in the
    PR that added this folder).
-7. **Check it:** in a new session, `gh auth status` should report a token from
-   `GH_TOKEN`. A push from a branch should show the App, not you, as the
-   pusher.
+7. **Check it:** in a new session, ask Claude to run `gh auth status` with
+   **both** the Bash and the PowerShell tool. Each should show
+   `agent-os-team[bot] (GH_TOKEN)` as the active account. A push from a branch
+   should show the App, not you, as the pusher.
 
 ## What enforces what
 | Limit | Enforced by |
