@@ -79,6 +79,12 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ github.token }}
+          # Agents open PRs as the agent-os-team GitHub App
+          # (tools/github-app/), and the action refuses bot-started runs
+          # unless listed (issue #28). Only that App: never '*', or any bot
+          # with access could start a run that holds the Claude token.
+          # Fork PRs are still skipped by the job's `if` above.
+          allowed_bots: agent-os-team
           # Keep file reads inside the checkout: no process environment
           # (/proc), runner internals or system files, where a token could be
           # read and copied into the summary.

@@ -63,6 +63,7 @@ caches them until five minutes before they expire:
 | The App cannot push to `main` or merge without the required checks | **GitHub:** the ruleset on `main`, which requires a PR and the `principal-engineer` check |
 | An approval from the App does not count as the stakeholder's | **GitHub, once set:** when approvals are required, require **code owner** review. `.github/CODEOWNERS` names the stakeholder, so the App's approval of its own PR does not satisfy it. Until then, the ruleset requires no approvals, so an App approval changes nothing. |
 | No commits on local `main` | The branch guard hook, best-effort |
+| The CI principal engineer reviews the App's PRs, and no other bot can start it | **The workflow:** `allowed_bots: agent-os-team` in `.github/workflows/principal-review.yml`, never `'*'` (`tools/review/principal-review-workflow.test.mjs`). If you name your App differently, change both. |
 
 ## Revoking it
 - In the App's settings, **delete the private key**. Tokens already issued
