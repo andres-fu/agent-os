@@ -34,7 +34,7 @@ operating system around them:
 | --- | --- | --- |
 | Charter | kernel rules | [CLAUDE.md](CLAUDE.md) |
 | Roles | processes, each with its own permissions | `.claude/agents/` |
-| Skills | programs | `.claude/skills/` (`/retro`, `/escalate`) |
+| Skills | programs | `.claude/skills/` (`/onboard`, `/retro`, `/escalate`, `/plan`). A role's standard procedure is a skill it preloads, ending in something a script checks (`/plan` → `tools/plan/check.mjs`) |
 | Gates | access control | `.github/workflows/gates.yml` |
 | Decisions | the system's audit log | `docs/decisions/` |
 | Lessons | long-term memory | `docs/lessons/` |
