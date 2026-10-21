@@ -1,10 +1,10 @@
 ---
 title: Now that agent-os is public, what may an unattended agent read, hold and merge?
-status: awaiting-decision   # awaiting-decision | decided | superseded
+status: decided   # awaiting-decision | decided | superseded
 raised_by: product-manager (night-shift spec)
 date: 2026-10-21
-decided_by:
-decided_on:
+decided_by: Andres Fuentes (stakeholder)
+decided_on: 2026-10-21
 ---
 
 ## Context
@@ -97,5 +97,28 @@ confirmation):
 - **Outside issues:** "I should handle all issues from people outside us - I
   can be that final gate."
 
-**Still open:** the named charter exception for the night shift, and
-`status`, which stays `awaiting-decision` until the stakeholder sets it.
+- **The charter exception: allowed, with limits.** Asked in the session: "may
+  an unattended agent read your ready-labelled issues while holding the App's
+  token (a named exception to the charter's untrusted-content rule), with the
+  limits in the spec?" Answer: "Allow, with limits". `CLAUDE.md`'s Security
+  section now names the exception. The limits:
+  - the App's token only, never the stakeholder's login;
+  - only issues whose `ready` label the stakeholder's own account added;
+  - only collaborators' text reaches the agent, and an issue edited after
+    labelling is refused;
+  - every night-shift PR is a draft, which `principal-review` skips;
+  - a separate operating-system user for the night shift is still to come
+    (#32).
+
+**What this does and doesn't put in force.** The exception takes effect only
+once the night-shift spec is approved and its enforcers are built and tested,
+as `CLAUDE.md` says. Until then the base rule applies in full. Even then, not
+every limit is enforced by code: no network beyond GitHub, no secrets, and
+never marking a PR ready are instructions, as the spec's Hard limits table
+says.
+
+**Not decided by this:** approving the night-shift spec itself. It stays
+`draft` until the stakeholder approves it.
+
+**To watch:** night PRs sent back for changes (`/retro`), any `ready` label
+not added by the stakeholder (the morning brief), and #32.
