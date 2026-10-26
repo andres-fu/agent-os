@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { findProtected, PROTECTED } from './protected-paths.mjs';
+import { findProtected, matches, normalise, PROTECTED } from './protected-paths.mjs';
 
 // Specs were unprotected until 2026-10-11; they now are (see the specs test).
 test('a PR that changes only code, tests and unprotected docs is not protected', () => {
@@ -92,4 +92,11 @@ test('the onboarding intake is protected; the backlog and team diagram are not',
 test('the test-first guard settings are protected; a nested copy is not', () => {
   assert.equal(findProtected(['dope-tdd.json']).protected, true);
   assert.equal(findProtected(['apps/web/dope-tdd.json']).protected, false);
+});
+
+// The night shift's diff check reuses these, so they stay exported.
+test('normalise and matches are shared with the night-shift diff check', () => {
+  assert.equal(normalise('.\\.github\\x.yml '), '.github/x.yml');
+  assert.equal(matches('.github/x.yml', { path: '.github/' }), true);
+  assert.equal(matches('CLAUDE.md.bak', { path: 'CLAUDE.md' }), false);
 });
