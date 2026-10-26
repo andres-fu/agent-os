@@ -96,7 +96,7 @@ test('the test-first guard settings are protected; a nested copy is not', () => 
 
 // .npmrc can change what every npm command does (registry, node-options);
 // .mcp.json adds tool servers to agent sessions in this repository.
-test('the npm and MCP settings are protected; nested copies are not the root ones', () => {
+test('the npm and MCP settings are protected; nested copies are intentionally not', () => {
   assert.deepEqual(findProtected(['.npmrc', '.mcp.json']).matches, ['.npmrc', '.mcp.json']);
   assert.equal(findProtected(['apps/web/.npmrc', 'docs/.mcp.json.md']).protected, false);
 });
