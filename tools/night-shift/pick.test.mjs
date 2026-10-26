@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-import { branchFor, briefFacts, decide, gather, isNightPr, REASONS, tonight } from './pick.mjs';
+import { branchFor, briefFacts, decide, gather, isNightPr, REASONS, redact, tonight } from './pick.mjs';
 
 const PICK = fileURLToPath(new URL('./pick.mjs', import.meta.url));
 
@@ -255,6 +255,20 @@ test('an issue edited after it was marked ready is skipped, marked to block', ()
   const result = run({ issues: [issue(3, { lastEditedAt: at(22) }), issue(5)] });
   assert.equal(result.issue.number, 5);
   assert.deepEqual(result.skipped, [{ number: 3, reason: 'edited after it was marked ready', block: true }]);
+});
+
+test('an edit in the same instant as the label counts as after: fail closed', () => {
+  const result = run({ issues: [issue(3, { lastEditedAt: at(21) })] });
+  assert.deepEqual(result.skipped, [{ number: 3, reason: 'edited after it was marked ready', block: true }]);
+});
+
+test('Fixes: #3, with a colon, also counts as fixing #3', () => {
+  const result = run({ openPrs: [pr({ body: 'Fixes: #3', author: { login: 'someone' }, headRefName: 'fix/3' })] });
+  assert.deepEqual(result.skipped, [{ number: 3, reason: 'an open PR fixes it' }]);
+});
+
+test('a token right after a word character is still redacted', () => {
+  assert.equal(redact('x_ghs_abc and aghp_def'), 'x_[redacted] and a[redacted]');
 });
 
 test('an issue edited before it was marked ready is fine', () => {

@@ -40,7 +40,8 @@ export const CAP = 3;
 const PR_LIMIT = 1000;
 const TITLE_MAX = 120;
 const WITHHELD = '(title withheld: outside author)';
-const TOKEN = /\b(?:gh[spour]_|github_pat_)[A-Za-z0-9_]+/g;
+// No leading \b: "_" is a word character, so x_ghs_... would slip past it.
+const TOKEN = /(?:gh[spour]_|github_pat_)[A-Za-z0-9_]+/g;
 
 /** Replaces anything shaped like a GitHub token with [redacted]. */
 export function redact(text) {
@@ -88,7 +89,7 @@ const sameLogin = (a, b) => typeof a === 'string' && typeof b === 'string' && a.
 function fixedBy(prs) {
   const numbers = new Set();
   for (const pr of prs) {
-    for (const match of String(pr.body ?? '').matchAll(/\b(?:fix(?:e[sd])?|close[sd]?|resolve[sd]?)\s+#(\d+)\b/gi)) {
+    for (const match of String(pr.body ?? '').matchAll(/\b(?:fix(?:e[sd])?|close[sd]?|resolve[sd]?):?\s+#(\d+)\b/gi)) {
       numbers.add(Number(match[1]));
     }
   }
@@ -115,7 +116,7 @@ function skipReason(issue, { stakeholder, fixed }) {
   if (!COLLABORATORS.includes(issue.authorAssociation)) return { reason: REASONS.outsideAuthor };
   // undefined means the edit time could not be read; null means never edited.
   if (issue.lastEditedAt === undefined) return { reason: REASONS.editUnreadable };
-  if (issue.lastEditedAt !== null && Date.parse(issue.lastEditedAt) > Date.parse(issue.readyLabel.at)) {
+  if (issue.lastEditedAt !== null && Date.parse(issue.lastEditedAt) >= Date.parse(issue.readyLabel.at)) {
     // The spec blocks such an issue (comment and needs-human), not just
     // passes it over; the instructions act on `block`.
     return { reason: REASONS.editedAfterReady, block: true };
