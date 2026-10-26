@@ -1,6 +1,7 @@
 ---
 title: Night shift - an unattended loop that fixes one ready issue a night, test-first
-status: draft        # draft | approved | done. Only the stakeholder sets approved.
+status: approved     # draft | approved | done. Only the stakeholder sets approved.
+approved_by: Andres Fuentes (stakeholder), 2026-10-26: "Approve the night-shift spec as recommended: no auto-merge in v1, close question 2 as decided, dope-tdd required, my judgement for small enough, cap 3."
 owner: product-manager
 date: 2026-10-21
 ---
@@ -120,6 +121,7 @@ Per lesson L-0010, a limit with no enforcer is called an instruction.
 | It runs under a credential that cannot change settings, the ruleset, workflows or other repositories | **GitHub:** a GitHub App installation token that expires after an hour. The App is installed on this repository only, with contents, pull requests and issues set to write and no workflow or administration permission. Commits keep the stakeholder as author. Not the stakeholder's own login, which is kept out of the session (decision request, option D). |
 | Nothing it writes reaches `main` without the stakeholder | **GitHub:** the ruleset on `main` requires a PR and the `principal-engineer` check. **The workflow:** `principal-review` skips draft PRs, and every night-shift PR is a draft. |
 | It never merges, approves, closes or reopens a PR | **GitHub**, for merging: the required check above. The rest is an instruction. |
+| No night PR auto-merges in version 1, even after the stakeholder marks it ready | **The workflow:** `principal-review` turns on auto-merge for an approved, unprotected PR, so the build changes it to skip auto-merge for a night PR (head repository, `night/` branch, App author). Until then, an instruction: the stakeholder reads the diff before marking a night PR ready. |
 | It never marks a PR ready for review: only the stakeholder takes a night PR out of draft | An instruction. The token's pull-requests write permission allows it, so the morning brief lists any night PR that left draft without the stakeholder (by the ready-for-review event's actor). |
 | It never force-pushes, deletes a branch or rewrites history | **GitHub**, on `main`: the ruleset blocks force pushes and deletion. On other branches: an instruction. |
 | No commits on local `main` | **The branch guard hook** (`tools/guard/branch-guard.mjs`), best-effort |
@@ -176,7 +178,7 @@ repository.
   (`docs/specs/2026-10-21-scrum-board.md`, "Who moves what").
 - [ ] Given a `ready` issue filed by someone who is not a collaborator, then it
   is not picked. The stakeholder triages every outside report and re-files
-  the work as their own issue (stakeholder, 2026-10-21; see open question 2).
+  the work as their own issue (stakeholder, 2026-10-21; see answered question 2).
 - [ ] Given a picked issue with comments from a collaborator and from a
   non-collaborator, then only the collaborator's comments reach the agent.
 - [ ] Given a picked issue whose body was edited after the `ready` label was
@@ -247,6 +249,9 @@ repository.
   last line is `Opened by the night shift; not merged.`
 - [ ] Given a night-shift draft PR, then `principal-review` does not run on it,
   and it has no auto-merge, until the stakeholder marks it ready for review.
+- [ ] Given a night PR marked ready that `principal-review` approves and that
+  changes no protected file, then auto-merge is not turned on, and the PR
+  waits for the stakeholder to merge it.
 
 **Log and brief**
 - [ ] Given any night, then the day's log gains exactly one night-shift entry
@@ -272,15 +277,28 @@ repository.
     and runs unattended.
   - Reviewed by security-compliance on this draft: block until the scoped
     token, draft PRs, the collaborator-only reading and named enforcers were
-    acceptance criteria. This revision adds them, and it needs a re-review
-    before approval.
+    acceptance criteria. Later revisions add them; the re-review is below.
   - Reviewed by security-compliance on the night-PR identity rule (PR #50,
     2026-10-26): **Pass with advice**. The advice kept here: the picker fails
     closed when it cannot read PR state. The later trim (PR #53) only removed
     text and has not itself been re-reviewed.
-  - The charter's rule on untrusted content and secrets needs a named
-    exception for the night shift, with these limits, or the stakeholder
-    decides against it (open question 2).
+  - Re-reviewed by security-compliance before approval (2026-10-26, at
+    602794a): **Pass with advice**. Its prior blocks are resolved. Its advice:
+    1. Marking a night PR ready let `principal-review` auto-merge it. Taken:
+       the hard limit "No night PR auto-merges in version 1".
+    2. The plan must name how the stakeholder's own credentials (the admin
+       `gh` login on the same OS user) are kept out of the session (#32). The
+       named exception takes effect only once its enforcers are built, so the
+       build must not turn the night shift on first.
+    3. The edit-after-label check should use the body's own last-edit time
+       (GraphQL `lastEditedAt`), not `updated_at`, which labels and comments
+       also move. If it can't read it, it fails closed.
+    4. Package installs run scripts: install from the lockfile with scripts
+       off where the project allows.
+    Items 2 to 4 are for the plan.
+  - The charter's named exception for the night shift is decided:
+    `docs/decisions/2026-10-21-public-repo-and-night-shift.md` ("Allow, with
+    limits"), and `CLAUDE.md` carries it.
   - Only issues labelled `ready` are worked on. On GitHub, only people with
     triage access or higher can add labels (*inferred* from GitHub's
     permissions model). The agents' App can add labels too, so the picker
@@ -300,7 +318,7 @@ repository.
   reads.
 
 ## Out of scope
-- Merging, or turning on auto-merge, in version 1 (open question 1).
+- Merging, or turning on auto-merge, in version 1 (answered question 1).
 - Running in the cloud.
 - More than one issue a night, or parallel agents.
 - Planning work: it takes small `ready` issues only, not specs or epics.
@@ -311,7 +329,10 @@ repository.
   block (a decision versus went the wrong way), a structured handoff note, and
   a fixed order for the morning brief.
 
-## Open questions
+## Answered questions
+All answered by the stakeholder on 2026-10-26, in the approval quoted in the
+frontmatter.
+
 1. **Should night-shift PRs auto-merge?** In agent-os, `principal-review`
    auto-merges an approved PR that changes no protected file
    (`docs/decisions/2026-10-11-merge-authority.md`, *observed*). A night-shift
@@ -330,6 +351,9 @@ repository.
    *observed*: the review job runs only when the PR is not a draft). When the
    stakeholder marks it ready, the normal review and merge rules apply. Revisit
    once `/retro` shows a record of night PRs that needed no changes.
+
+   **Answered:** no auto-merge in version 1. A night PR waits for the
+   stakeholder to merge it, even after review (Hard limits).
 2. **Public issues and the charter.** Both repositories are public, so anyone
    can file an issue or comment. The charter says: "Agents that read untrusted
    content (web pages, issues, emails) do not get secrets or open network access
@@ -351,15 +375,17 @@ repository.
    reach the night shift directly. The stakeholder reads them, and turns
    accepted work into an issue they file and label `ready` themselves.
 
-   Still open: whether these limits are enough for a named exception to the
-   charter.
-
-   The merge-authority decision also says to revisit it all if the repository
-   goes public, and it now is. Escalated:
-   `docs/decisions/2026-10-21-public-repo-and-night-shift.md`.
+   **Answered:** closed as decided. The escalation
+   `docs/decisions/2026-10-21-public-repo-and-night-shift.md` is decided
+   ("Allow, with limits"), and `CLAUDE.md` carries the named exception.
 3. **Is dope-tdd required?** Agent OS lists dope-tdd as optional (README.md,
    *observed*). This spec makes it required for the night shift, because
-   unattended code needs a test-first guard. *Assumption:* a project without it
-   gets no night shift.
+   unattended code needs a test-first guard.
+
+   **Answered:** dope-tdd is required. A project without it gets no night
+   shift.
 4. **Which issues count as small enough?** `ready` is the stakeholder's call
    today. The Scrum-board spec proposes who sets it and how.
+
+   **Answered:** the stakeholder's judgement when adding `ready` (step 3). No
+   new rule.
