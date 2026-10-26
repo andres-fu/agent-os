@@ -135,8 +135,9 @@ Per lesson L-0010, a limit with no enforcer is called an instruction.
 The files that govern it or the team: the charter (`CLAUDE.md`, `AGENTS.md`),
 `.claude/`, `.github/`, `docs/decisions/`, `docs/lessons/`, `docs/specs/`, the
 night-shift instructions and picker, the protected-paths rule,
-`dope-tdd.json`, the branch guard, and the dependency manifest and lockfile.
-If a fix needs one of them, it blocks.
+`dope-tdd.json`, the branch guard, the npm and MCP settings (`.npmrc`,
+`.mcp.json`; added by the stakeholder, 2026-10-26), and the dependency
+manifest and lockfile. If a fix needs one of them, it blocks.
 
 ### The daily log and the morning brief
 The log is one dated Markdown file per day, kept on the stakeholder's machine

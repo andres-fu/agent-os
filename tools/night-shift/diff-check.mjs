@@ -32,11 +32,13 @@ export const FORBIDDEN = [
   // .gitleaks.toml, .gitleaksignore and a .gitleaks/ folder alike.
   { path: '.gitleaks*', reason: 'the secret scanner settings' },
   { path: '.semgrep*', reason: 'the static analysis settings' },
+  { path: '.mcp.json', reason: 'the tool servers agent sessions in this repository load' },
 ];
 
 // Forbidden by base name at any depth: a nested package.json is still a
-// dependency change for that package.
+// dependency change for that package, and a nested .npmrc its npm settings.
 export const DEPENDENCY_FILES = [
+  '.npmrc',
   'package.json',
   'package-lock.json',
   'npm-shrinkwrap.json',

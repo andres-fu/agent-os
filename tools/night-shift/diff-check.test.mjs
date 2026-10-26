@@ -60,6 +60,15 @@ test('dependency files are forbidden by base name at any depth', () => {
   assert.deepEqual(checkDiff(z(...files)).forbidden, files);
 });
 
+// A nested package reads its own .npmrc, so it counts at any depth too.
+test('.npmrc is forbidden at any depth', () => {
+  assert.deepEqual(checkDiff(z('.npmrc', 'apps/web/.npmrc')).forbidden, ['.npmrc', 'apps/web/.npmrc']);
+});
+
+test('.mcp.json at the root is forbidden; a nested one is not read by Claude Code', () => {
+  assert.deepEqual(checkDiff(z('.mcp.json', 'docs/examples/.mcp.json')).forbidden, ['.mcp.json']);
+});
+
 test('names that only contain a dependency file name are allowed', () => {
   assert.deepEqual(checkDiff(z('docs/package.json.md', 'src/my-package.json')).forbidden, []);
 });
