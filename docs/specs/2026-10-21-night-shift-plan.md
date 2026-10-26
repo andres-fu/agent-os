@@ -156,9 +156,11 @@ git diff --name-only --no-renames -z origin/main...HEAD | node tools/night-shift
   - `docs/decisions/`, `docs/lessons/`, `docs/specs/`;
   - `tools/night-shift/`, `tools/review/protected-paths.mjs`, `tools/guard/`;
   - `dope-tdd.json`;
-  - the scanner settings, `.gitleaks*` and `.semgrep*`.
+  - the scanner settings, `.gitleaks*` and `.semgrep*`;
+  - the MCP settings, `.mcp.json` (added 2026-10-26).
 - Dependency files are forbidden by **base name at any depth**: `package.json`,
-  `package-lock.json`, `npm-shrinkwrap.json`, `yarn.lock`, `pnpm-lock.yaml`.
+  `package-lock.json`, `npm-shrinkwrap.json`, `yarn.lock`, `pnpm-lock.yaml`,
+  and `.npmrc` (added 2026-10-26).
 It reuses `normalise` and `matches`, which `tools/review/protected-paths.mjs`
 starts exporting. It does not reuse `PROTECTED`, which covers all of `tools/`
 and would block almost every fix in agent-os. Merge authority still comes

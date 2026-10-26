@@ -94,6 +94,13 @@ test('the test-first guard settings are protected; a nested copy is not', () => 
   assert.equal(findProtected(['apps/web/dope-tdd.json']).protected, false);
 });
 
+// .npmrc can change what every npm command does (registry, node-options);
+// .mcp.json adds tool servers to agent sessions in this repository.
+test('the npm and MCP settings are protected; nested copies are not the root ones', () => {
+  assert.deepEqual(findProtected(['.npmrc', '.mcp.json']).matches, ['.npmrc', '.mcp.json']);
+  assert.equal(findProtected(['apps/web/.npmrc', 'docs/.mcp.json.md']).protected, false);
+});
+
 // The night shift's diff check reuses these, so they stay exported.
 test('normalise and matches are shared with the night-shift diff check', () => {
   assert.equal(normalise('.\\.github\\x.yml '), '.github/x.yml');

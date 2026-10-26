@@ -29,6 +29,8 @@ export const PROTECTED = [
   { path: '.semgrep.yml', reason: 'the static analysis rules' },
   { path: '.semgrep/', reason: 'the static analysis rules' },
   { path: 'dope-tdd.json', reason: 'the test-first guard settings' },
+  { path: '.npmrc', reason: 'npm settings: the registry, and code npm loads into Node' },
+  { path: '.mcp.json', reason: 'the tool servers agent sessions in this repository load' },
 ];
 
 export function normalise(file) {
