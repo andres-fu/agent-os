@@ -104,8 +104,13 @@ alone is not proof: anyone can open a PR from a fork with a branch named
 `night/x` (lesson L-0019). The cap, the one-PR-a-night check and the morning
 brief all use this definition. If the picker cannot list the open PRs, or a
 PR has no head repository, it stops the night rather than count zero.
-*Inferred:* a PR opened with the App's installation token has the App's bot
-account as its author; the build confirms it with a real run (L-0015).
+*Observed* (2026-10-26, `gh pr list --state merged --json
+number,author,headRefName,isCrossRepository`): PRs #50, #52 and #53, opened
+with the App's installation token, have author `app/agent-os-team`, `is_bot:
+true`, and `isCrossRepository: false`. *Inferred:* the REST API shows the
+same account as `agent-os-team[bot]`, so the picker matches the login form its
+own API call returns. The build still confirms this with a real run of the
+picker (L-0015).
 
 ### Hard limits, and what enforces each
 Per lesson L-0010, a limit with no enforcer is called an instruction.
