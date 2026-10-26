@@ -31,11 +31,11 @@ export const PROTECTED = [
   { path: 'dope-tdd.json', reason: 'the test-first guard settings' },
 ];
 
-function normalise(file) {
+export function normalise(file) {
   return file.trim().replace(/\\/g, '/').replace(/^\.\//, '');
 }
 
-function matches(file, rule) {
+export function matches(file, rule) {
   return rule.path.endsWith('/') ? file.startsWith(rule.path) : file === rule.path;
 }
 
