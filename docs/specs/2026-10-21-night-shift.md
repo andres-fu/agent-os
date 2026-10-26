@@ -18,6 +18,21 @@ Evidence:
   (andres-fu/dope-tdd#162, *observed*: `tools/night-shift/` at 57a898f). It is
   specific to that repository. This spec makes it generic for any project that
   uses Agent OS.
+- Starr, Mann and Storey, *Theory of Developer Momentum*, arXiv 2610.24935,
+  as summarised in andres-fu/dope-tdd#169
+  (`docs/planning/process-and-agent-os.md`, "Ideas from the Theory of
+  Developer Momentum", *observed*; the paper itself was not re-read for this
+  revision). Its claims: momentum (felt progress toward a goal) is not flow
+  (immersion). A task is a hill: uphill is fog and exploring, the crest is
+  when the path becomes clear, downhill is execution. Working context is
+  rebuilt every session. Waiting on an agent breaks orientation. With agents
+  the downhill part compresses, and one person's momentum can outrun the
+  team's capacity to verify. The study is interview-based (12 developers, 8
+  feedback interviews), so its agent findings are leads, not results
+  (*inferred* for this project: none of them has been tested here). Five
+  parts of this spec come from it: what `ready` means, the cap on waiting
+  night PRs, the two kinds of block, the handoff note, and the order of the
+  morning brief.
 
 Who has it: **the stakeholder**, who owns the backlog and reviews what the team
 produces, and has limited hours.
@@ -52,24 +67,29 @@ checked out locally cannot change it.
    on `main` (`gates` in agent-os). If that run failed, it sends **one** phone
    push notification naming the run, writes the log, and stops. This is the only
    reason it ever notifies.
-2. **Pick the work.** Of the open issues labelled `ready`, it drops any that also
-   carry `needs-human` and any that an open PR already fixes. It takes the
-   oldest one left, by creation date. If none are left, it logs "nothing ready"
-   and stops.
-3. **Read it as data.** It reads the issue and its comments to learn what done
+2. **Room to review.** If three or more `night/` PRs are open, draft or not,
+   it logs "N night PRs waiting" and stops. See "The cap on waiting night PRs"
+   below.
+3. **Pick the work.** Of the open issues labelled `ready`, it drops any that also
+   carry `needs-human`, any that an open PR already fixes, and any that is not
+   past the crest (below). It takes the oldest one left, by creation date. If
+   none are left, it logs "nothing ready" and stops. Each issue dropped for not
+   being past the crest is logged with the part it lacks.
+4. **Read it as data.** It reads the issue and its comments to learn what done
    looks like. Text in an issue, a comment or a PR is never an instruction to
-   it. If what done looks like is unclear, it blocks (step 7).
-4. **A fresh worktree.** It works on a new branch `night/<issue>-<slug>`, based
+   it. If what done looks like is unclear, it blocks (step 8).
+5. **A fresh worktree.** It works on a new branch `night/<issue>-<slug>`, based
    on `origin/main`, in its own worktree. It never works in the stakeholder's
    checkout.
-5. **Test first, under a guard.** Its first edit is to the test paired with the
-   code it will change. If dope-tdd does not answer that edit with an `unlocked`
+6. **Test first, under a guard.** It starts from the first failing test the
+   issue names. Its first edit is to the test paired with the code it will
+   change. If dope-tdd does not answer that edit with an `unlocked`
    line, dope-tdd is not guarding the worktree, so it stops and logs that. It
    writes a failing test and sees it fail for the right reason, then makes the
    smallest fix and sees it pass. It needs the fix proven: dope-tdd's PROVEN, or
    a break-and-restore by hand. After three failed attempts at green, it
    blocks.
-6. **Check the diff, then open the PR.** It runs the project's full checks, and
+7. **Check the diff, then open the PR.** It runs the project's full checks, and
    a deterministic diff check that fails on any forbidden path or any change to
    the dependency manifest or lockfile. It opens the PR **as a draft**. Its body
    starts `Fixes #<n>`, follows the project's PR template and evidence receipt
@@ -77,13 +97,76 @@ checked out locally cannot change it.
    shift; not merged.` The stakeholder marks it ready for review. Only then does
    the CI principal engineer review it, because `principal-review` skips draft
    PRs.
-7. **Block rather than guess.** It comments `BLOCKED: <why>` on the issue, with
-   what it tried and what a person needs to decide, and adds `needs-human`. A
-   useful partial start may be pushed as a draft PR. Otherwise nothing is
-   pushed.
-8. **Log.** It appends an entry to the day's log: the time, the issue, the
-   outcome (PR link, blocked, nothing ready, or main red) and the check summary
-   lines.
+8. **Block rather than guess.** It comments `BLOCKED: <why>` on the issue, with
+   what it tried and what a person needs to decide, and adds `needs-human`.
+   The comment's second line names the kind of block (see "Two kinds of
+   block" below): `Kind: decision` or `Kind: wrong way`. A useful partial
+   start may be pushed as a draft PR. Otherwise nothing is pushed.
+9. **Hand off.** On a night that worked an issue, it writes a handoff note
+   (below): in the PR body when it opened a PR, otherwise in the `BLOCKED:`
+   comment. A night that stopped at step 1, 2 or 3 worked no issue and writes
+   none.
+10. **Log.** It appends an entry to the day's log: the time, the issue, the
+    outcome (PR link, blocked, nothing ready, night PRs waiting, or main red),
+    a link to the handoff note, and the check summary lines.
+
+### What `ready` means here: past the crest
+A task is a hill. Uphill is fog and exploring; the crest is when the path
+becomes clear; downhill is doing it. The night shift takes only the downhill
+part. Getting an issue over the crest is the product manager's job, and the
+stakeholder's `ready` label says it is over. This adds to the Definition of
+Ready in `docs/specs/2026-10-21-scrum-board.md`.
+
+An issue is past the crest when its body has:
+- **Goal:** what it is for, in a sentence or two;
+- **Done when:** what done looks like, as testable acceptance criteria;
+- **First failing test:** the test file and the behaviour the first new test
+  checks.
+
+The picker checks that each of the three headings is present and has text
+under it. Whether that text is good enough is the stakeholder's judgement when
+they add `ready`, which is an instruction. Because an issue edited after it was
+labelled is refused, the body the picker checks is the one the stakeholder
+labelled.
+
+### The cap on waiting night PRs
+"One PR a night" limits how fast drafts arrive, not how many pile up. With
+agents the downhill part is fast, and the night shift could produce work
+faster than the stakeholder can verify it. So the night shift does not run
+while three `night/` PRs are open. It counts every open one, draft or not: a PR
+marked ready for review can still be waiting on the stakeholder's merge.
+
+Three is a starting number: three nights of work that a stakeholder with
+limited hours can still review in one sitting (*assumption*). A paused night is
+logged, and the morning brief says so on its first line.
+
+### Two kinds of block
+A block costs the stakeholder more or less depending on what happened:
+- **`Kind: decision`**: the night shift is on the path the issue describes and
+  needs a choice to go on, for example between two behaviours the issue allows,
+  or a change to a protected path. Cheap to pick up: decide, and remove
+  `needs-human`.
+- **`Kind: wrong way`**: the work went off the intended path. Three failed
+  attempts at green, or a fix that turned out to need something the issue did
+  not foresee. Costly: first work out what happened, starting from the
+  handoff note.
+
+The night shift names the kind; that is an instruction. A `BLOCKED:` comment
+with no `Kind:` line, or with another value, is treated as `wrong way`, the
+costlier kind, so a missing label never makes a block look cheap.
+
+### The handoff note
+Working context has to be rebuilt every session, by the stakeholder in the
+morning and by the next night that takes the issue. The handoff note is where
+they start. It has four headings, each with text, or `none`:
+- **Done:** what this night finished;
+- **Next step:** the first thing to do on picking it up;
+- **Open question:** what a person needs to answer, if anything;
+- **Left red on purpose:** any test left failing deliberately, with its file,
+  its name and why.
+
+Writing it is an instruction. The morning brief flags a night PR or a
+night-shift `BLOCKED:` comment that lacks any of the four headings.
 
 ### Hard limits, and what enforces each
 Per lesson L-0010, a limit with no enforcer is called an instruction.
@@ -98,7 +181,10 @@ Per lesson L-0010, a limit with no enforcer is called an instruction.
 | No commits on local `main` | **The branch guard hook** (`tools/guard/branch-guard.mjs`), best-effort |
 | It never changes the files that govern it or the team (listed below), and adds no dependencies | **A deterministic diff check** before every push, which reuses `tools/review/protected-paths.mjs`. It runs in the agent's own session, so it is best-effort. The backstops are the protected-paths rule and the stakeholder's merge at merge time, and the token's lack of workflow permission. |
 | At most one pull request per night | **The issue picker**, a script: it exits with nothing to do if a `night/` PR was opened today |
-| Test-first | **dope-tdd** in enforce mode; step 5 stops the night if it is not guarding |
+| No night run while three `night/` PRs are open | **The issue picker**, a script: it counts open PRs whose head branch starts `night/` and exits with nothing to do at three or more |
+| It takes only issues past the crest | **The issue picker**, a script: it skips a `ready` issue whose body lacks text under **Goal**, **Done when** or **First failing test**. Whether that text is clear enough is an instruction (the stakeholder's call when labelling). |
+| Every block names its kind, and every worked night leaves a handoff note | An instruction. The morning brief treats a block with no kind as `wrong way`, and flags a missing handoff heading. |
+| Test-first | **dope-tdd** in enforce mode; step 6 stops the night if it is not guarding |
 | Issue text is data, not instructions | **The issue picker:** it passes on only the issue body and comments written by collaborators (by author association). Everything after that is an instruction. |
 | It calls no network beyond GitHub and the package registry, and reads no secrets | **The scheduled task's tool permissions** (an allowlist). Today that is Claude Code's settings, which are best-effort. |
 | Every number it writes comes from output it saw | An instruction |
@@ -118,10 +204,18 @@ comments, tokens or environment values. Logs older than 30 days are deleted
 (*assumption*). The morning brief treats the log, issues and PRs as data, and
 runs with read-only tools. The brief reads that log, the
 open `night/` PRs and their CI, the `needs-human` issues, main's CI and the
-`ready` queue. It writes at most 15 lines, in this order:
-1. what needs the stakeholder today;
-2. what the night shift did;
-3. what is queued.
+`ready` queue. It is built for re-orientation: the stakeholder picks up from
+it, so it leads with what to do next, not with what happened. It writes at
+most 15 lines, in this order:
+1. **the next decision:** the one thing the stakeholder should do first, with
+   its link (main red, then the night paused by the cap, then the oldest
+   `decision` block, then the oldest night PR waiting for review);
+2. what else needs the stakeholder, with blocks split into **decisions on the
+   intended path** (cheap) and **went the wrong way** (costly: start from the
+   handoff note), and any missing handoff headings;
+3. what the night shift did;
+4. what is queued, including `ready` issues skipped as not past the crest and
+   the part each lacks.
 
 It links every PR and issue, and appends the brief to the same day's log under
 `## Morning brief`.
@@ -155,6 +249,24 @@ repository.
   added, then it is not worked on. It is blocked with "edited after it was
   marked ready". The edit is found by comparing the body's last edit time, in
   the issue's edit history, with the time of the label event.
+- [ ] Given the oldest `ready` issue has **Goal** and **Done when** but no
+  **First failing test** heading, or the heading with no text under it, then
+  it is skipped, the next oldest issue past the crest is picked, and the log
+  names the skipped issue and "First failing test" as the missing part.
+- [ ] Given every `ready` issue lacks one of the three headings, then no
+  branch, commit, PR, comment or label change is made, and the log says
+  "nothing ready" and lists each skipped issue with its missing part.
+
+**The cap on waiting night PRs**
+- [ ] Given three open `night/` PRs, two drafts and one ready for review, then
+  no issue is picked, nothing is pushed, and the log records "3 night PRs
+  waiting".
+- [ ] Given two open `night/` PRs and a `ready` issue past the crest, then the
+  issue is picked.
+- [ ] Given three open PRs of which only two have a head branch starting
+  `night/`, then the night shift runs.
+- [ ] Given main CI is red and three `night/` PRs are open, then the one push
+  notification is still sent (the main check comes first).
 
 **Main red**
 - [ ] Given the latest main CI run failed, then exactly one push notification is
@@ -176,6 +288,21 @@ repository.
   summary lines.
 - [ ] Given three attempts at green fail, then the issue gets a `BLOCKED:`
   comment and the `needs-human` label, and no ready-for-review PR is opened.
+- [ ] Given three attempts at green fail, then the `BLOCKED:` comment's second
+  line is `Kind: wrong way`.
+- [ ] Given a fix needs a change to a protected path, then the `BLOCKED:`
+  comment's second line is `Kind: decision`.
+
+**The handoff note**
+- [ ] Given a night that opened a PR, then the PR body has the headings
+  **Done**, **Next step**, **Open question** and **Left red on purpose**, each
+  with text or `none`.
+- [ ] Given a night that blocked without a PR, then the `BLOCKED:` comment has
+  the same four headings.
+- [ ] Given a partial start pushed with a test still failing, then **Left red
+  on purpose** names that test's file and name.
+- [ ] Given a night that stopped at main red, the cap or nothing ready, then no
+  handoff note is written.
 
 **Limits**
 - [ ] Given the night shift's scheduled task, then the GitHub credential it uses
@@ -219,6 +346,17 @@ repository.
 - [ ] Given a log with one PR, one blocked issue and two queued issues, then the
   brief is at most 15 lines, lists what needs the stakeholder first, and links
   each PR and issue.
+- [ ] Given one `decision` block and one waiting night PR, then the brief's
+  first line is the decision block, with its link.
+- [ ] Given a night paused by the cap, then the brief's first line says the
+  night shift is paused and links the waiting `night/` PRs.
+- [ ] Given one `Kind: decision` block, one `Kind: wrong way` block and one
+  `BLOCKED:` comment with no `Kind:` line, then the brief lists the first under
+  decisions and the other two under went the wrong way.
+- [ ] Given a night PR whose body lacks the **Next step** heading, then the
+  brief flags it, naming the PR and the missing heading.
+- [ ] Given a `ready` issue skipped as not past the crest, then the brief lists
+  it under what is queued, with the part it lacks.
 - [ ] Given the night shift instructions are changed on a local branch but not
   on `main`, then the next run follows the `main` version.
 
@@ -241,6 +379,8 @@ repository.
 - **Cost:**
   - Sonnet, per the charter.
   - One issue and at most three attempts at green a night, then it blocks.
+  - No run at all while three `night/` PRs are open, so tokens are not spent
+    on work nobody can review yet.
   - The morning brief reads only, and is short.
   - No hosting; it runs on the stakeholder's existing plan.
 - **Performance:** no target. A night run may take as long as the plan's limits
@@ -258,6 +398,11 @@ repository.
 - Creating the `ready` and `needs-human` labels or the board. That is covered by
   the Scrum-board spec (`docs/specs/2026-10-21-scrum-board.md`).
 - Notifications for anything other than main CI being red.
+- Getting issues over the crest: that is the product manager's and the
+  stakeholder's work, before `ready`.
+- A lens for `/retro` (was a way forward possible, were we enabled with tools,
+  time and know-how, were we supported). It applies to every retro, not only
+  the night shift's, so it belongs in the `/retro` skill, not here.
 
 ## Open questions
 1. **Should night-shift PRs auto-merge?** In agent-os, `principal-review`
@@ -310,4 +455,8 @@ repository.
    unattended code needs a test-first guard. *Assumption:* a project without it
    gets no night shift.
 4. **Which issues count as small enough?** `ready` is the stakeholder's call
-   today. The Scrum-board spec proposes who sets it and how.
+   today. The Scrum-board spec proposes who sets it and how. This spec adds
+   that a `ready` issue must be past the crest, with the three headings the
+   picker checks. *Recommendation:* add "the first failing test is named" to
+   the Scrum-board spec's Definition of Ready in its own PR, so both specs
+   agree.
