@@ -4,9 +4,9 @@ title: In a public repository a branch name is not an identity; anyone can open 
 date: 2026-10-26
 project: agent-os
 kind: mistake
-status: proposed
+status: adopted
 rule: When a rule depends on who made a PR, comment or label, identify it by fields outsiders cannot set (the head repository, the author or the event's actor), never by a branch name, title or text.
-enforced_by: none
+enforced_by: agent-rule
 evidence:
   - https://github.com/andres-fu/agent-os/pull/50
   - https://github.com/andres-fu/agent-os/pull/50#issuecomment-6422712381
@@ -37,3 +37,11 @@ it. The next commit (d0bf64a) counts a block, or reads a handoff note, only from
 App's own comments and PRs. Acceptance criteria cover fork PRs, PRs by other
 authors and comments by other accounts. This lesson proposes the general
 rule.
+
+## Adopted
+Adopted by the stakeholder on 2026-10-26, in the session ("Adopt L-0019 as an
+agent-rule"). Enforced by an agent-rule: a line in the review rubrics of
+`.claude/agents/principal-engineer.md` (Correct) and
+`.claude/agents/security-compliance.md` (Trust boundaries). The CI principal
+engineer reads its role file as it is on `main`, so the line applies to PRs
+reviewed after this merges.

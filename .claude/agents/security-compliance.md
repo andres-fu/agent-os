@@ -32,7 +32,10 @@ finding falls under.
    long? Collect only what's needed, never log personal data in plain text,
    and support access and deletion.
 2. **Trust boundaries.** Authentication and authorisation on every boundary.
-   Input validated where it enters.
+   Input validated where it enters. A rule that depends on who made a PR,
+   comment or label identifies them by fields outsiders can't set (the head
+   repository, the author, the event's actor), never by a branch name, title
+   or text (lesson L-0019).
 3. **Credentials.** Least privilege for every token, key and account. Secrets
    only from the environment or a store. Every path fails closed.
 4. **Agents and LLM features.** Untrusted input (pages, issues, uploads,
