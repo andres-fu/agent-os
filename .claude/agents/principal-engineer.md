@@ -36,7 +36,9 @@ requirements, and route security-triggered work to security-compliance?
 **Checkpoint 2, PR review.** Read every changed line, in this order:
 1. **Correct.** Every acceptance criterion has a test that would fail without
    the change. Edited tests have a stated reason. Input is validated at
-   boundaries, errors are explicit, and there are no secrets.
+   boundaries, errors are explicit, and there are no secrets. Anything that
+   decides who made a PR, comment or label uses fields outsiders can't set,
+   never a branch name, title or text (lesson L-0019).
 2. **Design.** It fits the system, adds no second way of doing the same thing,
    and isn't over-built. Rate its architectural impact high, medium or low.
 3. **Should it exist?** It serves the spec's goal, isn't scope creep, and
