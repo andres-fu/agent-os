@@ -113,6 +113,17 @@ test('redact replaces every GitHub token shape', () => {
   assert.equal(redact('the ghost of ghs'), 'the ghost of ghs');
 });
 
+// Issue #60: today's installation tokens hold "." and "-"; none of the tail
+// may reach the file. Built at run time so no token-looking literal is here.
+test('a real-shaped installation token in the brief leaves no tail in the log', () => {
+  const h = home();
+  const tail = `${'c3-D4'.repeat(40)}.${'e5F6'.repeat(33)}`;
+  appendBrief(`Pasted by mistake: ghs_${'A1b2_'.repeat(9)}.${tail}\n`, { home: h, now: NOW });
+  const text = readFileSync(dayFile(h), 'utf8');
+  assert.match(text, /Pasted by mistake: \[redacted\]\n/);
+  assert.equal(text.includes('c3-D4'), false);
+});
+
 test('the brief is appended under ## Morning brief, redacted and cut at 4 KiB', () => {
   const h = home();
   appendBrief(`Needs you: #12\nleaked ghs_SECRET123\n${'z'.repeat(5000)}`, { home: h, now: NOW });
