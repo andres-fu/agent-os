@@ -123,11 +123,13 @@ says.
 **Follow-up, 2026-10-26: the spec is approved** (PR #55). The stakeholder's
 words: "Approve the night-shift spec as recommended: no auto-merge in v1,
 close question 2 as decided, dope-tdd required, my judgement for small
-enough, cap 3." Two changes to the limits above:
-- **No auto-merge, even after ready.** A draft skips review, but once marked
-  ready an approved, unprotected PR auto-merged. The spec now requires the
-  workflow to skip auto-merge for night PRs. Until that is built, it is an
-  instruction: read the diff before marking a night PR ready.
+enough, cap 3." What that means for the limits above:
+- **No auto-merge while a night PR is a draft.** Once the stakeholder marks
+  it ready, the normal rules apply: an approved PR that changes no protected
+  file auto-merges. Marking ready is the stakeholder's go-ahead, so read the
+  diff first. The security re-review proposed also stopping auto-merge after
+  ready. The stakeholder declined: "Remove the no-auto-merge-after-ready
+  limit".
 - **At most three night PRs waiting.** A night PR is one from this
   repository's `night/` branch, opened by the App (lesson L-0019).
 

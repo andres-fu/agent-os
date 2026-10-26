@@ -120,9 +120,7 @@ Per lesson L-0010, a limit with no enforcer is called an instruction.
 | --- | --- |
 | It runs under a credential that cannot change settings, the ruleset, workflows or other repositories | **GitHub:** a GitHub App installation token that expires after an hour. The App is installed on this repository only, with contents, pull requests and issues set to write and no workflow or administration permission. Commits keep the stakeholder as author. Not the stakeholder's own login, which is kept out of the session (decision request, option D). |
 | Nothing it writes reaches `main` without the stakeholder | **GitHub:** the ruleset on `main` requires a PR and the `principal-engineer` check. **The workflow:** `principal-review` skips draft PRs, and every night-shift PR is a draft. |
-| It never merges, approves, closes or reopens a PR | **GitHub**, for merging: the required check above. The rest is an instruction. |
-| No night PR auto-merges in version 1, even after the stakeholder marks it ready | **The workflow:** `principal-review` turns on auto-merge for an approved, unprotected PR, so the build changes it to skip auto-merge for a night PR (head repository, `night/` branch, App author). Until then, an instruction: the stakeholder reads the diff before marking a night PR ready. |
-| It never marks a PR ready for review: only the stakeholder takes a night PR out of draft | An instruction. The token's pull-requests write permission allows it, so the morning brief lists any night PR that left draft without the stakeholder (by the ready-for-review event's actor). |
+| It never merges, approves, closes or reopens a PR | **GitHub**, for merging: the required check above. The rest is an instruction. || It never marks a PR ready for review: only the stakeholder takes a night PR out of draft | An instruction. The token's pull-requests write permission allows it, so the morning brief lists any night PR that left draft without the stakeholder (by the ready-for-review event's actor). |
 | It never force-pushes, deletes a branch or rewrites history | **GitHub**, on `main`: the ruleset blocks force pushes and deletion. On other branches: an instruction. |
 | No commits on local `main` | **The branch guard hook** (`tools/guard/branch-guard.mjs`), best-effort |
 | It never changes the files that govern it or the team (listed below), and adds no dependencies | **A deterministic diff check** before every push, which reuses `tools/review/protected-paths.mjs`. It runs in the agent's own session, so it is best-effort. The backstops are the protected-paths rule and the stakeholder's merge at merge time, and the token's lack of workflow permission. |
@@ -249,10 +247,6 @@ repository.
   last line is `Opened by the night shift; not merged.`
 - [ ] Given a night-shift draft PR, then `principal-review` does not run on it,
   and it has no auto-merge, until the stakeholder marks it ready for review.
-- [ ] Given a night PR marked ready that `principal-review` approves and that
-  changes no protected file, then auto-merge is not turned on, and the PR
-  waits for the stakeholder to merge it.
-
 **Log and brief**
 - [ ] Given any night, then the day's log gains exactly one night-shift entry
   with the time, the issue (or none), the outcome and the check summary lines.
@@ -284,8 +278,10 @@ repository.
     text and has not itself been re-reviewed.
   - Re-reviewed by security-compliance before approval (2026-10-26, at
     602794a): **Pass with advice**. Its prior blocks are resolved. Its advice:
-    1. Marking a night PR ready let `principal-review` auto-merge it. Taken:
-       the hard limit "No night PR auto-merges in version 1".
+    1. Marking a night PR ready lets `principal-review` auto-merge it if it
+       is approved and changes no protected file. Declined by the
+       stakeholder: "Remove the no-auto-merge-after-ready limit". Marking a
+       night PR ready is the stakeholder's go-ahead; read the diff first.
     2. The plan must name how the stakeholder's own credentials (the admin
        `gh` login on the same OS user) are kept out of the session (#32). The
        named exception takes effect only once its enforcers are built, so the
@@ -352,8 +348,12 @@ frontmatter.
    stakeholder marks it ready, the normal review and merge rules apply. Revisit
    once `/retro` shows a record of night PRs that needed no changes.
 
-   **Answered:** no auto-merge in version 1. A night PR waits for the
-   stakeholder to merge it, even after review (Hard limits).
+   **Answered:** no auto-merge in version 1 while a night PR is a draft, as
+   recommended above. Once the stakeholder marks it ready, the normal rules
+   apply, including auto-merge of an approved PR that changes no protected
+   file. The stakeholder declined a stricter limit that would also have
+   stopped auto-merge after ready (2026-10-26: "Remove the
+   no-auto-merge-after-ready limit").
 2. **Public issues and the charter.** Both repositories are public, so anyone
    can file an issue or comment. The charter says: "Agents that read untrusted
    content (web pages, issues, emails) do not get secrets or open network access
