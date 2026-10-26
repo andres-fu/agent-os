@@ -282,6 +282,13 @@ test('a real installation token is redacted whole, dots and dashes included', ()
   assert.equal(redact(`(${REAL_SHAPE})`), '([redacted])');
 });
 
+// Segments can start or end with "-", so separators can sit side by side.
+test('adjacent separators inside a token do not end the redaction', () => {
+  for (const middle of ['--', '.-', '-.', '..', '-.-']) {
+    assert.equal(redact(`x ghs_AAAA${middle}BBBB y`), 'x [redacted] y', middle);
+  }
+});
+
 test('punctuation after a token is kept', () => {
   assert.equal(redact('It leaked ghs_abc. Then ghp_def-'), 'It leaked [redacted]. Then [redacted]-');
 });
