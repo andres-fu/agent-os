@@ -41,10 +41,11 @@ const PR_LIMIT = 1000;
 const TITLE_MAX = 120;
 const WITHHELD = '(title withheld: outside author)';
 // No leading \b: "_" is a word character, so x_ghs_... would slip past it.
-// Installation tokens now hold "." and "-" (issue #60), so the token runs on
-// through them, but only while more token characters follow: a full stop
-// ending a sentence stays.
-const TOKEN = /(?:gh[spour]_|github_pat_)[A-Za-z0-9_]+(?:[.-][A-Za-z0-9_]+)*/g;
+// Installation tokens now hold "." and "-" (issue #60), sometimes side by
+// side, so the token runs on through any run of them, but only while more
+// token characters follow: a full stop ending a sentence stays. The
+// separators are outside the word class, so matching stays linear.
+const TOKEN = /(?:gh[spour]_|github_pat_)[A-Za-z0-9_]+(?:[.-]+[A-Za-z0-9_]+)*/g;
 
 /** Replaces anything shaped like a GitHub token with [redacted]. */
 export function redact(text) {
