@@ -190,6 +190,10 @@ repository.
 - [ ] Given the API call that lists open PRs fails, or an open PR has no head
   repository, then no issue is picked, nothing is pushed, and the log says
   PR state could not be read.
+- [ ] Given a real run in which the night shift opened a PR, then the picker
+  counts that PR as a night PR (L-0015).
+- [ ] Given main CI is red and three night PRs are open, then the one push
+  notification is still sent (the main check comes first).
 
 **Main red**
 - [ ] Given the latest main CI run failed, then exactly one push notification is
@@ -267,7 +271,8 @@ repository.
     before approval.
   - Reviewed by security-compliance on the night-PR identity rule (PR #50,
     2026-10-26): **Pass with advice**. The advice kept here: the picker fails
-    closed when it cannot read PR state.
+    closed when it cannot read PR state. The later trim (PR #53) only removed
+    text and has not itself been re-reviewed.
   - The charter's rule on untrusted content and secrets needs a named
     exception for the night shift, with these limits, or the stakeholder
     decides against it (open question 2).
