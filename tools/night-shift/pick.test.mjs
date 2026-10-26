@@ -271,6 +271,21 @@ test('a token right after a word character is still redacted', () => {
   assert.equal(redact('x_ghs_abc and aghp_def'), 'x_[redacted] and a[redacted]');
 });
 
+// Installation tokens today are about 383 characters and contain . and -
+// (observed 2026-10-26, issue #60). Built at run time so no token-looking
+// literal sits in the source.
+const REAL_SHAPE = `ghs_${'A1b2_'.repeat(9)}.${'c3-D4'.repeat(40)}.${'e5F6'.repeat(33)}`;
+
+test('a real installation token is redacted whole, dots and dashes included', () => {
+  assert.equal(REAL_SHAPE.length, 383);
+  assert.equal(redact(`token ${REAL_SHAPE} end`), 'token [redacted] end');
+  assert.equal(redact(`(${REAL_SHAPE})`), '([redacted])');
+});
+
+test('punctuation after a token is kept', () => {
+  assert.equal(redact('It leaked ghs_abc. Then ghp_def-'), 'It leaked [redacted]. Then [redacted]-');
+});
+
 test('an issue edited before it was marked ready is fine', () => {
   assert.equal(run({ issues: [issue(3, { lastEditedAt: at(20) })] }).issue.number, 3);
 });
