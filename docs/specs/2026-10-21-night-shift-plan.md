@@ -8,7 +8,7 @@ date: 2026-10-26
 ---
 
 ## Classification and review
-**Non-trivial:** 8 tasks in 3 PRs, with new interfaces. `principal-engineer`
+**Non-trivial:** 9 tasks in 3 PRs, with new interfaces. `principal-engineer`
 reviews the plan before coding.
 
 Security review: yes. The night shift reads untrusted input (public issues),
@@ -211,32 +211,48 @@ prompt is only "fetch, then read `tools/night-shift/night-shift.md` with
 - The instructions are read from `origin/main`.
 - Night PRs are drafts.
 
-### Needs the stakeholder before turn-on (task T3.2)
-The security re-review asked the plan to name how the stakeholder's own `gh`
-login is kept out of the night shift's session (decision record, option D, and #32):
-- **A. Same OS user, checked:** the session-start hook already sets `GH_TOKEN`
-  to the App's token (or `unavailable`). The picker's identity check refuses
-  anything else.
-  - This *checks* the identity, but doesn't *keep the login out*. The
-    stakeholder's stored `gh` login, and git's stored credentials (Windows
-    Credential Manager), stay reachable by an agent that unsets `GH_TOKEN` or
-    calls git another way.
-  - So A does **not** meet the spec's criterion that "the session holds none
-    of the stakeholder's own GitHub or git credentials" (AC-22). Choosing A
-    needs that criterion changed.
-  - Settings denies for `unset GH_TOKEN`, `gh auth` and the `gh` config folder
-    would help, but they are best-effort, and #37 shows a deny rule that never
-    matches.
-  - Cost: none; already built.
-- **B. A separate Windows user (#32):** the stakeholder's logins aren't on
-  that user at all. This meets AC-22.
-  - Cost: the desktop app and the scheduled tasks must run under that user,
-    and the machine must be logged in as it at night (*inferred*).
+### Where it runs (decided by the stakeholder, 2026-10-26)
+**A dedicated Windows user on the stakeholder's PC** (#32). On that user:
+- the App's key, in `~/.agent-os/`;
+- Claude Code, logged in to the stakeholder's plan;
+- dope-tdd, which stays **required**, as the spec says;
+- a clone of the repository.
 
-*Recommendation:* B, since it is the only option that meets the approved
-spec. If B proves impractical on this machine, A with the denies, plus a
-spec change the stakeholder approves. The stakeholder decides with
-`/escalate` before T3.2.
+Nothing else: no personal `gh` login, and no stored git credentials. That is
+what meets AC-22, "the session holds none of the stakeholder's own GitHub or
+git credentials".
+
+The rejected alternative was the stakeholder's own Windows user. The App
+identity would be checked there, but the stored `gh` and git logins would
+stay reachable by an agent that unsets `GH_TOKEN`.
+
+**Two ways to schedule it on that user. The dry run (T3.2) picks one:**
+1. **The desktop app's scheduled tasks**, with the night-shift user left
+   signed in alongside the stakeholder's. Windows keeps both sessions' apps
+   running (*inferred*).
+   - The docs say these tasks run only "while the desktop app is running and
+     your computer is awake" (desktop-scheduled-tasks, read 2026-10-26).
+   - So "Keep computer awake" must be on.
+2. **`claude -p` from Windows Task Scheduler**, as that user.
+   - The docs say non-bare `-p` runs the project's hooks and loads installed
+     plugins (headless, read 2026-10-26).
+   - It needs a token from `claude setup-token`. *Unknown:* whether the Max
+     plan's terms allow scheduled unattended use. Check that before choosing
+     this way.
+
+**Not in version 1: cloud scheduled tasks or cloud sessions.** Each reason is
+from the docs, read 2026-10-26:
+- runs act as the stakeholder's GitHub user, not the App ("Commits and pull
+  requests carry your GitHub user", routines);
+- repo-declared plugins don't load, so dope-tdd can't guard the run
+  (cloud-environments, "What carries over");
+- the GitHub proxy rejects GraphQL, so `gh pr` and `gh issue` fail with 403
+  (cloud-environments);
+- there's no safe place for the App's key: environment variables are visible
+  to anyone using the environment.
+
+Revisit when cloud runs can use an App identity and `gh pr`, and dope-tdd's CI
+catch check is on in agent-os.
 
 ## Tasks
 Waves run in order. Tasks in a wave run in parallel and share no file. Each
@@ -278,11 +294,17 @@ This touches `tools/`, so the stakeholder merges it. Security review: yes.
 ### PR 3: "night-shift: dry run, then turn-on"
 | Task | Wave | Files it may change | ACs | First failing test |
 | --- | --- | --- | --- | --- |
-| T3.1 Dry run (QA) | A | `docs/night-shift/dry-run-2026-MM-DD.md` | AC-14, AC-18 to AC-22, AC-25 to AC-27, AC-32 to AC-34 | n/a: a real run (L-0015), recorded with command output |
-| T3.2 Turn-on (stakeholder) | B | `tools/night-shift/README.md` | — | n/a: after the credential decision, the stakeholder creates the two scheduled tasks; the README records the date |
+| T3.1 Night-shift user (stakeholder) | A | `tools/night-shift/README.md` | AC-22 (no stakeholder logins) | n/a: the stakeholder creates the dedicated Windows user and sets it up as in "Where it runs"; `gh auth status` there lists no stored login |
+| T3.2 Dry run (QA) | B | `docs/night-shift/dry-run-2026-MM-DD.md` | AC-14, AC-18 to AC-22, AC-25 to AC-27, AC-32 to AC-34 | n/a: a real run (L-0015) as the night-shift user, recorded with command output; it picks the desktop app or `claude -p` |
+| T3.3 Turn-on (stakeholder) | C | `tools/night-shift/README.md` | — | n/a: the stakeholder creates the two scheduled tasks on the night-shift user; the README records the date and which way they run |
 
 Notes:
-- **T3.1 runs on agent-os itself:**
+- T2.1's README has a short **"How to run it"** section:
+  - **Recommended:** a dedicated OS user, or machine, that holds no personal
+    logins, left on with the desktop app's scheduled tasks or `claude -p`.
+  - **Not supported yet:** cloud runs, for the four reasons in "Where it runs".
+  - **Required:** dope-tdd.
+- **T3.2 runs on agent-os itself, as the night-shift user:**
   1. The stakeholder files and labels one throwaway `ready` issue.
   2. A session runs the night-shift instructions by hand, with the App token.
   3. The result must be a draft PR from `night/…`, a log entry and a brief.
@@ -300,19 +322,19 @@ doing the work 18–21, limits 22–26, the PR 27–28, log and brief 29–35.
 
 | AC | Task | Test file | AC | Task | Test file |
 | --- | --- | --- | --- | --- | --- |
-| AC-1 to AC-5 | T1.1 | `pick.test.mjs` | AC-22 | T1.4, T3.1 | `pick.test.mjs`, dry run |
+| AC-1 to AC-5 | T1.1 | `pick.test.mjs` | AC-22 | T1.4, T3.2 | `pick.test.mjs`, dry run |
 | AC-6 to AC-9 | T1.1, T1.4 | `pick.test.mjs` | AC-23 | T1.2 | `diff-check.test.mjs` |
 | AC-10 to AC-13 | T1.1, T1.4 | `pick.test.mjs` | AC-24 | T1.1 | `pick.test.mjs` |
-| AC-14 | T3.1 | dry run | AC-25, AC-26 | T2.1, T3.1 | `instructions.test.mjs`, dry run |
-| AC-15 to AC-17 | T1.1 | `pick.test.mjs` | AC-27 | T2.1, T3.1 | `instructions.test.mjs`, dry run |
-| AC-18 to AC-21 | T2.1, T3.1 | `instructions.test.mjs`, dry run | AC-28 | T2.2 | `principal-review-workflow.test.mjs` |
-| AC-29 to AC-31 | T1.3 | `log.test.mjs` | AC-32 to AC-34 | T2.1, T3.1 | `instructions.test.mjs`, dry run |
+| AC-14 | T3.2 | dry run | AC-25, AC-26 | T2.1, T3.2 | `instructions.test.mjs`, dry run |
+| AC-15 to AC-17 | T1.1 | `pick.test.mjs` | AC-27 | T2.1, T3.2 | `instructions.test.mjs`, dry run |
+| AC-18 to AC-21 | T2.1, T3.2 | `instructions.test.mjs`, dry run | AC-28 | T2.2 | `principal-review-workflow.test.mjs` |
+| AC-29 to AC-31 | T1.3 | `log.test.mjs` | AC-32 to AC-34 | T2.1, T3.2 | `instructions.test.mjs`, dry run |
 | | | | AC-35 | T2.1 | `instructions.test.mjs` |
 
 ## What enforces each protection (L-0010)
 | Protection | Enforced by |
 | --- | --- |
-| It runs as the App, for this repository only | **Script:** the picker's identity check. **GitHub:** the App's permissions. Keeping the stakeholder's logins out: option B (a separate OS user), or an instruction plus best-effort denies under A. See the decision above. |
+| It runs as the App, for this repository only | **Script:** the picker's identity check. **GitHub:** the App's permissions. Keeping the stakeholder's logins out: **the OS**, since it runs as a dedicated Windows user that holds none of them (see "Where it runs"). |
 | The cap can't be pushed out of the list by fork PRs | **Script:** the picker reads up to 1000 PRs and stops if it hits that limit. |
 | The brief sees no stranger's text | **Script:** `facts` withholds outside authors' titles, and every body and comment. Its task's command allowlist is best-effort (Claude Code settings). |
 | Nothing reaches `main` without the stakeholder | **GitHub:** the ruleset. **Workflow:** `principal-review` skips drafts (pinned by T2.2). |
@@ -335,14 +357,16 @@ doing the work 18–21, limits 22–26, the PR 27–28, log and brief 29–35.
   each file in `package.json`, which the night shift may not change. So a
   night fix may only add tests to existing test files, and a fix that needs a
   new one blocks. Escalate if most `ready` issues block for this reason.
-- **The stakeholder's stored `gh` and git logins are reachable on the same
-  OS user.** That is the credential decision above. The night shift is not
-  turned on (T3.2) before it is decided and, for B, built.
-- **Scheduled tasks and project hooks.** The docs don't say whether a
-  scheduled task runs the session-start hook that sets `GH_TOKEN`
-  (`tools/github-app/README.md`). The picker's identity check fails closed if
-  it doesn't. The dry run is done the same way the scheduled task will run.
-  Escalate if the hook doesn't run there.
+- **A personal login ends up on the night-shift user.** That would undo the
+  separation. The setup steps (T3.1) say never to sign in to GitHub there as
+  the stakeholder. The dry run checks that `gh auth status` lists no stored
+  login. Re-check it before turn-on.
+- **Desktop scheduled tasks and project hooks.** The docs don't say whether a
+  desktop scheduled task runs the project's session-start hook and plugins
+  exactly as an interactive session does. If the hook doesn't run, the
+  picker's identity check fails closed. The dry run is done the same way the
+  scheduled task will run. If the hook or dope-tdd doesn't load there, switch
+  to `claude -p`, or escalate.
 - **Package installs run scripts.** agent-os has no dependencies, so there is
   nothing to install. For other projects the instructions say: install from
   the lockfile with scripts off (`npm ci --ignore-scripts`) where the project
