@@ -38,6 +38,7 @@ operating system around them:
 | Gates | access control | `.github/workflows/gates.yml` |
 | Decisions | the system's audit log | `docs/decisions/` |
 | Lessons | long-term memory | `docs/lessons/` |
+| Eval | the OS's own test suite | [tools/eval/](tools/eval/README.md): ten golden cases from shipped PRs and a scorer. Any change to the team (a fold, a new skill, a model swap) has to score at least as well on them |
 
 ## The loop
 
